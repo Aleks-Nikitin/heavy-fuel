@@ -31,11 +31,11 @@
   --border: 0 0% 100% / 0.15;
   --input: 0 0% 100% / 0.15;
   --ring: 75 100% 50%;
-  --chart-1: 120 80% 55%;
-  --chart-2: 142 72% 56%;
-  --chart-3: 184 72% 52%;
-  --chart-4: 214 96% 62%;
-  --chart-5: 280 78% 62%;
+  --chart-1: hsl(120 80% 55%);
+  --chart-2: hsl(142 72% 56%);
+  --chart-3: hsl(184 72% 52%);
+  --chart-4: hsl(214 96% 62%);
+  --chart-5: hsl(280 78% 62%);
   --radius: 1rem;
   --sidebar: 220 15% 15%;
   --sidebar-foreground: 0 0% 98%;
