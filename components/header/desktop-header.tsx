@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CATEGORY_DATA } from "@/lib/project-utils";
 import { ShoppingCartIcon, UserIcon } from "lucide-react";
 export default function DesktopHeader() {
   return (
@@ -9,21 +10,15 @@ export default function DesktopHeader() {
         </Link>
       </div>
       <div className="flex items-center gap-8 font-semibold tracking-wider text-white">
-        <Link
-          href="/supplements"
-          className="transition-colors hover:text-[#CCFF00]"
-        >
-          SUPPLEMENTS
-        </Link>
-        <Link href="/gear" className="transition-colors hover:text-[#CCFF00]">
-          GEAR
-        </Link>
-        <Link
-          href="/apparel"
-          className="transition-colors hover:text-[#CCFF00]"
-        >
-          APPAREL
-        </Link>
+        {CATEGORY_DATA.map((category) => (
+          <Link
+            key={category.name}
+            href={category.link}
+            className="transition-colors hover:text-[#CCFF00]"
+          >
+            {category.name}
+          </Link>
+        ))}
       </div>
       <div className="">
         <input

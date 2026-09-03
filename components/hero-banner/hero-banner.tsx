@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import heavyFuelBanner from "@/public/heavy-fuel-banner.jpg";
+import { cn } from "@/lib/utils";
 export default function HeroBanner() {
   return (
-    <div className="relative w-full rounded-3xl overflow-hidden border border-white/10 bg-[#0B0D10] p-8 md:p-16 my-6">
+    <div className="relative w-full  overflow-hidden border border-white/10 bg-[#0B0D10] p-8 md:p-16">
       <div className="absolute inset-0 z-0 opacity-40">
         <Image
           src={heavyFuelBanner}
@@ -28,23 +29,26 @@ export default function HeroBanner() {
         </p>
 
         <div className="flex flex-wrap items-center gap-4 pt-2">
-          <Button
-            size="lg"
-            className="bg-[#CCFF00] text-black font-bold hover:bg-[#b3e600] transition-colors rounded-xl px-8"
+          <Link
+            href="/shop/supplements"
+            className={cn(
+              buttonVariants({ variant: "default", size: "lg" }),
+              "bg-[#CCFF00] text-black font-bold hover:bg-[#b3e600] transition-colors rounded-xl px-8",
+            )}
           >
-            <Link href="/shop/supplements">
-              Shop Supplements
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-          </Button>
+            <span>Shop Supplements</span>
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Link>
 
-          <Button
-            size="lg"
-            variant="outline"
-            className="bg-white/5 border-white/15 text-white hover:bg-white/10 transition-colors rounded-xl px-8 backdrop-blur-md"
+          <Link
+            href="/shop/gear"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "bg-white/5 border-white/15 text-white hover:bg-white/10 transition-colors rounded-xl px-8 backdrop-blur-md",
+            )}
           >
-            <Link href="/shop/gear">Explore Gear</Link>
-          </Button>
+            <span>Explore Gear</span>
+          </Link>
         </div>
       </div>
     </div>
