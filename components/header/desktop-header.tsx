@@ -5,8 +5,11 @@ export default function DesktopHeader() {
   return (
     <div className="flex w-full items-center justify-between gap-8 font-semibold tracking-wider text-white">
       <div className="">
-        <Link href="/" className="transition-colors hover:text-[#CCFF00]">
-          HeavyFuel
+        <Link
+          href="/"
+          className="text-2xl font-black uppercase text-white tracking-tighter"
+        >
+          Heavy<span className="text-[#CCFF00]">Fuel</span>
         </Link>
       </div>
       <div className="flex items-center gap-8 font-semibold tracking-wider text-white">
