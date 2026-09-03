@@ -26,6 +26,9 @@ export default function Category() {
 
   return (
     <div className="w-full space-y-6 py-8 bg-[#0B0D10]">
+      <h2 className="text-2xl text-center px-4 md:text-3xl font-black uppercase text-white tracking-tight">
+        BEST CATEGORIES
+      </h2>
       <div
         ref={scrollRef}
         onScroll={handleScroll}
