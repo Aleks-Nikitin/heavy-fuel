@@ -18,6 +18,7 @@ export default function ProductGrid({ title, products }: ProductGridProps) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-4 md:px-0">
+        {/* make a backend script to fetch only the most popular products    */}
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
