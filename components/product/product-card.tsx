@@ -21,7 +21,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.name}
         </span>
         <span className="text-[#8E8E93] text-sm uppercase tracking-widest">
-          {product.variant}
+          {product.options.variant[0]}
         </span>
       </div>
 

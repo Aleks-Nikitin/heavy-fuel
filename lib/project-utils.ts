@@ -12,10 +12,14 @@ export const PRODUCT_DATA: Product[] = [
     id: 1,
     name: "Whey Protein",
     image: "/protein-tub.jpg",
-    link: "/shop/supplements/whey-protein",
+    link: "/products/1",
     price: 29.99,
     category: "Supplements",
-    variant: "Chocolate",
+    options: {
+      size: ["200g", "500g", "1kg"],
+      additionalSizePrice: [0, 5, 10],
+      variant: ["Chocolate", "Vanilla", "Strawberry"],
+    },
     rating: 4.5,
     reviews: 120,
     description: "High-quality whey protein for muscle growth and recovery.",
@@ -24,10 +28,14 @@ export const PRODUCT_DATA: Product[] = [
     id: 2,
     name: "Creatine Monohydrate",
     image: "/protein-tub.jpg",
-    link: "/shop/supplements/creatine-monohydrate",
+    link: "/products/2",
     price: 19.99,
     category: "Supplements",
-    variant: "Unflavored",
+    options: {
+      size: ["100g", "250g", "500g"],
+      additionalSizePrice: [0, 3, 7],
+      variant: ["Unflavored", "Fruit Punch", "Watermelon"],
+    },
     rating: 4.7,
     reviews: 85,
     description:
@@ -37,10 +45,14 @@ export const PRODUCT_DATA: Product[] = [
     id: 3,
     name: "Pre-Workout Formula",
     image: "/protein-tub.jpg",
-    link: "/shop/supplements/pre-workout-formula",
+    link: "/products/3",
     price: 34.99,
     category: "Supplements",
-    variant: "Fruit Punch",
+    options: {
+      size: ["100g", "250g", "500g"],
+      additionalSizePrice: [0, 5, 10],
+      variant: ["Unflavored", "Fruit Punch", "Watermelon"],
+    },
     rating: 4.3,
     reviews: 60,
     description: "Energizing pre-workout formula to boost focus and endurance.",
@@ -49,10 +61,14 @@ export const PRODUCT_DATA: Product[] = [
     id: 4,
     name: "Resistance Bands",
     image: "/protein-tub.jpg",
-    link: "/shop/gear/resistance-bands",
+    link: "/products/4",
     price: 14.99,
     category: "Gear",
-    variant: "Set of 5",
+    options: {
+      size: ["Light", "Medium", "Heavy"],
+      additionalSizePrice: [0, 2, 4],
+      variant: ["Set of 3", "Set of 5", "Set of 7"],
+    },
     rating: 4.6,
     reviews: 45,
     description:
@@ -62,10 +78,15 @@ export const PRODUCT_DATA: Product[] = [
     id: 5,
     name: "Weightlifting Gloves",
     image: "/protein-tub.jpg",
-    link: "/shop/gear/weightlifting-gloves",
+    link: "/products/5",
     price: 24.99,
     category: "Gear",
-    variant: "Black",
+    options: {
+      size: ["Small", "Medium", "Large"],
+      additionalSizePrice: [0, 2, 4],
+      variant: ["Black", "White", "Gray"],
+    },
+
     rating: 4.4,
     reviews: 30,
     description:
@@ -75,10 +96,14 @@ export const PRODUCT_DATA: Product[] = [
     id: 6,
     name: "Compression Shirt",
     image: "/protein-tub.jpg",
-    link: "/shop/apparel/compression-shirt",
+    link: "/products/6",
     price: 39.99,
     category: "Apparel",
-    variant: "Black/Red",
+    options: {
+      size: ["Small", "Medium", "Large"],
+      additionalSizePrice: [0, 2, 4],
+      variant: ["Black/Red", "Blue/White", "Green/Yellow"],
+    },
     rating: 4.5,
     reviews: 50,
     description:
@@ -88,10 +113,14 @@ export const PRODUCT_DATA: Product[] = [
     id: 7,
     name: "Athletic Shorts",
     image: "/protein-tub.jpg",
-    link: "/shop/apparel/athletic-shorts",
+    link: "/products/7",
     price: 29.99,
     category: "Apparel",
-    variant: "Navy Blue",
+    options: {
+      size: ["Small", "Medium", "Large"],
+      additionalSizePrice: [0, 2, 4],
+      variant: ["Black", "Gray", "Navy Blue"],
+    },
     rating: 4.2,
     reviews: 40,
     description:
@@ -104,7 +133,11 @@ export type Product = {
   image: string;
   link: string;
   price: number;
-  variant: string;
+  options: {
+    size: string[];
+    additionalSizePrice: number[];
+    variant: string[];
+  };
   rating: number;
   reviews: number;
   category: string;
