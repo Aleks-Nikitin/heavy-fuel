@@ -32,7 +32,7 @@ export default function Price({
         </h3>
         <div className="flex flex-wrap gap-3">
           {options.variant.map((variant) => (
-            <button
+            <Button
               key={variant}
               onClick={() => setSelectedVariant(variant)}
               className={cn(
@@ -43,7 +43,7 @@ export default function Price({
               )}
             >
               {variant}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -54,9 +54,8 @@ export default function Price({
         </h3>
         <div className="flex flex-wrap gap-3">
           {options.size.map((size, index) => {
-            const upcharge = options.additionalSizePrice[index];
             return (
-              <button
+              <Button
                 key={size}
                 onClick={() => setSelectedSizeIdx(index)}
                 className={cn(
@@ -66,35 +65,32 @@ export default function Price({
                     : "border-white/10 bg-[#13161C] text-[#8E8E93] hover:border-white/30 hover:text-white",
                 )}
               >
-                {size}{" "}
-                {upcharge > 0 && (
-                  <span className="opacity-70 ml-1">(+${upcharge})</span>
-                )}
-              </button>
+                {size}
+              </Button>
             );
           })}
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-        <div className="flex items-center justify-between border border-white/15 bg-[#13161C] rounded-2xl px-2 h-16 w-full sm:w-36 shrink-0">
-          <button
+      <div className="flex flex-row items-center gap-4 pt-4">
+        <div className="flex items-center justify-between border border-white/15 bg-[#13161C] rounded-2xl px-2 h-16 sm:w-36 shrink xl:shrink-0">
+          <Button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
             className="w-12 h-12 flex items-center justify-center text-[#8E8E93] hover:text-[#CCFF00] transition-colors"
           >
             <Minus className="w-5 h-5" />
-          </button>
+          </Button>
           <span className="text-white font-black text-xl">{quantity}</span>
-          <button
+          <Button
             onClick={() => setQuantity(quantity + 1)}
             className="w-12 h-12 flex items-center justify-center text-[#8E8E93] hover:text-[#CCFF00] transition-colors"
           >
             <Plus className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         <Button
-          className="flex-1 w-full h-16 rounded-2xl bg-[#CCFF00] text-black font-black uppercase tracking-wider text-lg hover:bg-[#b3e600] transition-all hover:scale-[1.02]"
+          className="py-4 px-6 md:py-1 xl:flex-1 h-16 rounded-2xl bg-[#CCFF00] text-black font-black uppercase tracking-wider text-lg hover:bg-[#b3e600] transition-all hover:scale-[1.02]"
           onClick={() => {
             console.log("Added to cart:", {
               id,
