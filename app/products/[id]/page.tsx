@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Price from "@/components/product/price";
 import { PRODUCT_DATA } from "@/lib/project-utils";
-
+import Reviews from "@/components/product/reviews";
 export default function ProductPage() {
   const product = PRODUCT_DATA[0];
 
@@ -48,6 +48,7 @@ export default function ProductPage() {
             />
           </div>
         </div>
+        <Reviews />
       </div>
     </main>
   );
