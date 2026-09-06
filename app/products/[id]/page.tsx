@@ -1,9 +1,18 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import Price from "@/components/product/price";
-import { PRODUCT_DATA } from "@/lib/project-utils";
 import Reviews from "@/components/product/reviews";
-export default function ProductPage() {
-  const product = PRODUCT_DATA[0];
+import { getProductById } from "@/actions/product-actions";
+interface ProductPageProps {
+  params: Promise<{ id: string }>;
+}
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { id } = await params;
+  const product = await getProductById(id);
+
+  if (!product) {
+    notFound();
+  }
 
   return (
     <main className="min-h-screen bg-[#0B0D10] py-12 md:py-24">
@@ -23,11 +32,18 @@ export default function ProductPage() {
           <div className="flex flex-col justify-center">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-3 py-1 rounded-full border border-white/10 bg-[#13161C] text-[#8E8E93] text-xs font-bold uppercase tracking-widest">
-                {product.category}
+                {product.category.title}
               </span>
               <span className="flex items-center text-[#CCFF00] text-sm font-bold">
-                ★ {product.rating}{" "}
-                <span className="text-[#8E8E93] ml-1">({product.reviews})</span>
+                ★ {product.reviews.length
+                  ? (
+                      product.reviews.reduce((sum, review) => sum + review.rating, 0) /
+                      product.reviews.length
+                    ).toFixed(1)
+                  : "0.0"}
+                <span className="text-[#8E8E93] ml-1">
+                  ({product.reviews.length})
+                </span>
               </span>
             </div>
 
@@ -42,9 +58,8 @@ export default function ProductPage() {
             <div className="w-full h-px bg-white/10 my-8" />
 
             <Price
-              price={product.price}
+              variants={product.variants}
               id={product.id}
-              options={product.options}
             />
           </div>
         </div>

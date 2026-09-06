@@ -1,9 +1,9 @@
 import ProductCard from "./product-card";
-import { Product } from "@/lib/project-utils";
+import { ProductDisplay } from "@/lib/product-types";
 
 interface ProductGridProps {
   title?: string;
-  products: Product[];
+  products: ProductDisplay[];
 }
 
 export default function ProductGrid({ title, products }: ProductGridProps) {

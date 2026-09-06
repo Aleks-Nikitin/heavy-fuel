@@ -4,20 +4,26 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { ProductVariantDisplay } from "@/lib/product-types";
 
 export default function Price({
-  price,
+  variants,
   id,
-  options,
 }: {
-  price: number;
-  id: number;
-  options: { size: string[]; additionalSizePrice: number[]; variant: string[] };
+  variants: ProductVariantDisplay[];
+  id: string;
 }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedSizeIdx, setSelectedSizeIdx] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState(options.variant[0]);
-  const currentPrice = price + options.additionalSizePrice[selectedSizeIdx];
+  const sizes = [...new Set(variants.map((variant) => variant.size))];
+  const flavors = [...new Set(variants.map((variant) => variant.variant))];
+  const [selectedVariant, setSelectedVariant] = useState(flavors[0]);
+  const selectedSize = sizes[selectedSizeIdx];
+  const selectedProductVariant = variants.find(
+    (variant) =>
+      variant.size === selectedSize && variant.variant === selectedVariant,
+  ) ?? variants[0];
+  const currentPrice = selectedProductVariant?.price ?? 0;
   const totalPrice = currentPrice * quantity;
 
   return (
@@ -31,7 +37,7 @@ export default function Price({
           Select Flavor
         </h3>
         <div className="flex flex-wrap gap-3">
-          {options.variant.map((variant) => (
+          {flavors.map((variant) => (
             <Button
               key={variant}
               onClick={() => setSelectedVariant(variant)}
@@ -53,7 +59,7 @@ export default function Price({
           Select Size
         </h3>
         <div className="flex flex-wrap gap-3">
-          {options.size.map((size, index) => {
+          {sizes.map((size, index) => {
             return (
               <Button
                 key={size}
@@ -95,7 +101,7 @@ export default function Price({
             console.log("Added to cart:", {
               id,
               variant: selectedVariant,
-              size: options.size[selectedSizeIdx],
+              size: selectedSize,
               quantity,
               totalPrice,
             });

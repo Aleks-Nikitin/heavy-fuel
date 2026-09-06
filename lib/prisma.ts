@@ -9,7 +9,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClientType };
 
 export const prisma =
   globalForPrisma.prisma ||
-  new (PrismaClientType as any)({
+  new PrismaClientType({
     adapter,
   });
 

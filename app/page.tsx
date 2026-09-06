@@ -1,14 +1,16 @@
 import HeroBanner from "@/components/hero-banner/hero-banner";
 import Category from "@/components/category/category";
-import { PRODUCT_DATA } from "@/lib/project-utils";
-import ProductCard from "@/components/product/product-card";
 import ProductGrid from "@/components/product/product-grid";
-export default function Home() {
+import { getProducts } from "@/actions/product-actions";
+
+export default async function Home() {
+  const products = await getProducts();
+
   return (
     <main>
       <HeroBanner />
       <Category />
-      <ProductGrid title="Most Popular Products" products={PRODUCT_DATA} />
+      <ProductGrid title="Most Popular Products" products={products} />
     </main>
   );
 }

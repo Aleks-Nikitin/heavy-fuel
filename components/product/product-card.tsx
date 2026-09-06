@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Product } from "@/lib/project-utils";
+import { ProductDisplay } from "@/lib/product-types";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product }: { product: ProductDisplay }) {
   return (
     <Link
-      href={product.link}
+      href={`/products/${product.id}`}
       className="group flex flex-col w-full h-[400px] justify-between p-6 rounded-3xl border border-white/10 bg-[#13161C] hover:border-[#CCFF00]/50 hover:bg-[#181c24] transition-all duration-300 cursor-pointer"
     >
       <div className="relative w-full h-[220px] flex items-center justify-center overflow-hidden">
@@ -21,13 +21,13 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.name}
         </span>
         <span className="text-[#8E8E93] text-sm uppercase tracking-widest">
-          {product.options.variant[0]}
+          {product.variants[0].variant}
         </span>
       </div>
 
       <div className="flex items-center justify-between w-full pt-4 mt-auto border-t border-white/5">
         <span className="text-[#CCFF00] font-black text-xl">
-          ${product.price.toFixed(2)}
+          ${product.variants[0]?.price.toFixed(2) ?? "0.00"}
         </span>
         <span className="text-xs text-white font-semibold uppercase tracking-wider group-hover:text-[#CCFF00] transition-colors">
           View Details →
