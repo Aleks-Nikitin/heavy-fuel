@@ -32,7 +32,9 @@ export default function DesktopHeader() {
       </div>
       <div className="flex items-center gap-8 font-semibold tracking-wider text-white">
         <UserIcon className="text-white transition-colors hover:text-[#CCFF00]" />
-        <ShoppingCartIcon className="text-white transition-colors hover:text-[#CCFF00]" />
+        <Link href="/cart">
+          <ShoppingCartIcon className="text-white transition-colors hover:text-[#CCFF00]" />
+        </Link>
       </div>
     </div>
   );

@@ -1,0 +1,19 @@
+node_modules
+.git
+.gitignore
+
+.next
+out
+.agents
+.claude
+.windsurf
+
+# Environment files (injected via docker-compose)
+.env*
+
+# Credentials and certificates
+*.pem
+*.key
+
+# Dev tooling
+*.log

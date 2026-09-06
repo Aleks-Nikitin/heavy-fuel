@@ -15,7 +15,9 @@ export default function MobileHeader() {
       <div className="flex items-center gap-8">
         <UserIcon className="text-white" />
         <SearchIcon className="text-white" />
-        <ShoppingCartIcon className="text-white" />
+        <Link href="/cart">
+          <ShoppingCartIcon className="text-white" />
+        </Link>
         <Menu />
       </div>
     </div>
