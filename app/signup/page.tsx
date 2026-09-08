@@ -2,23 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function LoginPage() {
+export default function SignUpPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting login:", { email, password });
+    console.log("Submitting sign up:", { name, email, password });
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignUp = () => {
     console.log("Trigger Google OAuth");
   };
 
-  const handleGithubSignIn = () => {
+  const handleGithubSignUp = () => {
     console.log("Trigger GitHub OAuth");
   };
 
@@ -29,17 +30,17 @@ export default function LoginPage() {
 
         <div className="flex flex-col items-center text-center mb-8">
           <h1 className="text-xl font-extrabold uppercase text-white tracking-wide">
-            Welcome Back
+            Create An Account
           </h1>
           <p className="text-[#8E8E93] text-sm mt-1">
-            Sign in to access your orders & stack
+            Join the community and fuel your goals
           </p>
         </div>
 
         <div className="flex flex-col gap-3 mb-6">
           <Button
             type="button"
-            onClick={handleGoogleSignIn}
+            onClick={handleGoogleSignUp}
             className="w-full h-12 bg-[#0B0D10] hover:bg-[#181c24] text-white font-bold border border-white/10 rounded-xl flex items-center justify-center gap-3 transition-all"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -65,7 +66,7 @@ export default function LoginPage() {
 
           <Button
             type="button"
-            onClick={handleGithubSignIn}
+            onClick={handleGithubSignUp}
             className="w-full h-12 bg-[#0B0D10] hover:bg-[#181c24] text-white font-bold border border-white/10 rounded-xl flex items-center justify-center gap-3 transition-all"
           >
             <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -78,11 +79,28 @@ export default function LoginPage() {
         <div className="relative flex items-center justify-center my-6">
           <div className="w-full border-t border-white/10" />
           <span className="bg-[#13161C] px-3 text-xs font-bold uppercase tracking-widest text-[#8E8E93] absolute">
-            Or Sign In With Email
+            Or Register With Email
           </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#8E8E93] mb-2">
+              Full Name
+            </label>
+            <div className="relative flex items-center">
+              <User className="w-5 h-5 absolute left-4 text-[#8E8E93]" />
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Bob Smith"
+                className="w-full h-12 bg-[#0B0D10] border border-white/10 rounded-xl pl-12 pr-4 text-white placeholder:text-white/20 text-sm focus:outline-none focus:border-[#CCFF00] transition-colors"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#8E8E93] mb-2">
               Email Address
@@ -101,17 +119,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#8E8E93]">
-                Password
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-[#8E8E93] hover:text-[#CCFF00] transition-colors"
-              >
-                Forgot?
-              </Link>
-            </div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#8E8E93] mb-2">
+              Password
+            </label>
             <div className="relative flex items-center">
               <Lock className="w-5 h-5 absolute left-4 text-[#8E8E93]" />
               <input
@@ -129,19 +139,19 @@ export default function LoginPage() {
             type="submit"
             className="w-full h-14 bg-[#CCFF00] text-black font-black uppercase tracking-wider text-base rounded-xl hover:bg-[#b3e600] transition-all hover:scale-[1.01] mt-2 flex items-center justify-center gap-2"
           >
-            Sign In
+            Create Account
             <ArrowRight className="w-5 h-5" />
           </Button>
         </form>
 
         <div className="mt-8 text-center pt-6 border-t border-white/10">
           <p className="text-sm text-[#8E8E93]">
-            Don&apos;t have an account?{" "}
+            Already have an account?{" "}
             <Link
-              href="/signup"
+              href="/login"
               className="text-[#CCFF00] font-bold uppercase tracking-wider hover:underline ml-1"
             >
-              Sign Up
+              Sign In
             </Link>
           </p>
         </div>
