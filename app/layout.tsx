@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Header from "@/components/header/header";
+import { QueryProvider } from "@/providers/query-provider";
 import { Geist, Geist_Mono, Outfit, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -44,9 +45,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body className="min-h-full flex flex-col">
-        <Header session={session}/>
-        {children}
-        <Footer />
+        <QueryProvider>
+          <Header session={session} />
+          {children}
+          <Footer />
+        </QueryProvider>
       </body>
     </html>
   );

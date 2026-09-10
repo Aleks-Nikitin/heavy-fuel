@@ -1,29 +1,29 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
-export async function getAllOrders(){
-    const session = await auth.api.getSession();
-    if(!session?.user?.id){
-        throw new Error("User not authenticated");
+export async function getAllOrders() {
+  const session = await auth.api.getSession();
+  if (!session?.user?.id) {
+    throw new Error("User not authenticated");
+  }
+  if (session) {
+    try {
+      let orders;
+      if (session.user.isAdmin) {
+        orders = await prisma.order.findMany();
+      } else {
+        orders = await prisma.order.findMany({
+          where: {
+            userId: session.user.id,
+          },
+        });
+      }
+      return orders;
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      throw new Error("Failed to fetch orders");
     }
-    if(session){
-        try{
-            let orders;
-            if(session.user.isAdmin){
-                //  orders= await prisma.order.findMany();
-                // return orders;
-            }
-            // orders= await prisma.order.findMany({
-            //     where:{
-            //         userId: session.user.id
-            //     }
-            // });
-            // return orders;
-        }
-        catch(error){
-
-        }
-    }
+  }
 }
