@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body className="min-h-full flex flex-col">
-        <Header />
+        <Header session={session}/>
         {children}
         <Footer />
       </body>

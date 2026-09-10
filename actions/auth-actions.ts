@@ -1,11 +1,11 @@
 "use server";
 import { auth } from "@/lib/auth";
-import {headers} from "next/headers";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 export async function signUp(
   name: string,
   email: string,
   password: string,
-  callbackUrl="/",
 ) {
     try {
     const result = await auth.api.signUpEmail({
@@ -13,7 +13,7 @@ export async function signUp(
         name,
         email,
         password,
-        callbackURL: callbackUrl,
+        callbackURL: "/",
       },
     });
     return result;
@@ -25,14 +25,13 @@ export async function signUp(
 export async function signInWithEmail(
   email: string,
   password: string,
-  callbackUrl="/",
 ) {
     try {
     const result = await auth.api.signInEmail({
       body: {
         email,
         password,
-        callbackURL: callbackUrl,
+        callbackURL: "/",
       },
     });
     return result;
@@ -43,11 +42,22 @@ export async function signInWithEmail(
 }
 export async function signOut(){
   try {
-    const result = await auth.api.signOut(
-    {headers: await headers()});
-    return result;
+     const result = await auth.api.signOut({ headers: await headers() });
+  return result;
   } catch (error) {
     console.error("Error signing out:", error);
     throw new Error("Failed to sign out");
+  }
+}
+export async function signInSocial(provider: "github") {
+  const { url } = await auth.api.signInSocial({
+    body: {
+      provider,
+      callbackURL: "/",
+    },
+  });
+
+  if (url) {
+    redirect(url);
   }
 }
