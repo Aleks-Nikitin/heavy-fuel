@@ -1,8 +1,12 @@
+"use client";
 import Link from "next/link";
 import { CATEGORY_DATA } from "@/lib/project-utils";
+import {useSession} from"@/lib/auth-client";
+
 import { ShoppingCartIcon, UserIcon } from "lucide-react";
 
 export default function DesktopHeader() {
+const { data: session, isPending } = useSession();
   return (
     <div className="flex w-full items-center justify-between gap-8 font-semibold tracking-wider text-white">
       <div className="">
@@ -18,7 +22,7 @@ export default function DesktopHeader() {
           <Link
             key={category.name}
             href={category.link}
-            className="transition-colors hover:text-[#CCFF00]"
+            className="transition-colors uppercase hover:text-[#CCFF00]"
           >
             {category.name}
           </Link>
@@ -33,8 +37,10 @@ export default function DesktopHeader() {
       </div>
       <div className="flex items-center gap-8 font-semibold tracking-wider text-white">
       
-        <UserIcon className="text-white transition-colors hover:text-[#CCFF00]" />
-        
+        <Link href={session?.user ? "/profile" : "/auth"}>
+          <UserIcon className="text-white transition-colors hover:text-[#CCFF00]" />
+          
+        </Link>
         <Link href="/cart">
           <ShoppingCartIcon className="text-white transition-colors hover:text-[#CCFF00]" />
         </Link>
