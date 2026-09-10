@@ -2,7 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import Price from "@/components/product/price";
 import Reviews from "@/components/product/reviews";
-import { getProductById } from "@/actions/product-actions";
+import { getProductById } from "@/lib/actions/product-actions";
 interface ProductPageProps {
   params: Promise<{ id: string }>;
 }

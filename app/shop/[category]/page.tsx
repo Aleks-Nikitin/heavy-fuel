@@ -1,5 +1,5 @@
 import ProductGrid from "@/components/product/product-grid";
-import { getProductsByCategory } from "@/actions/product-actions";
+import { getProductsByCategory } from "@/lib/actions/product-actions";
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
 }

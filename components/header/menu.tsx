@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { CATEGORY_DATA } from "@/lib/project-utils";
 import Link from "next/link";
-import {signOut} from "@/actions/auth-actions";
+import {signOut} from "@/lib/actions/auth-actions";
 import { ChevronRight } from "lucide-react";
 import { MenuIcon, XIcon } from "lucide-react";
 import {

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signInWithEmail, signUp, signInSocial } from "@/actions/auth-actions";
+import { signInWithEmail, signUp, signInSocial } from "@/lib/actions/auth-actions";
 export default function AuthClientPage() {
   const router = useRouter();
   const [isSignIn, setIsSignIn] = useState(true);

@@ -13,5 +13,14 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET! as string,
     },
   },
+  user:{
+    additionalFields: {
+      isAdmin:{
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+      }
+    }
+      },
   plugins: [nextCookies()],
 });
