@@ -1,6 +1,8 @@
 import MobileHeader from "./mobile-header";
 import DesktopHeader from "./desktop-header";
-export default function Header() {
+import { auth } from "@/lib/auth";
+type Session = typeof auth.$Infer.Session;
+export default function Header({session}:{session:Session |null}) {
   return (
     <header className="sticky z-50 border border-white/15 bg-white/5 p-4 backdrop-blur-xl shadow-2xl">
       <nav className="flex w-full items-center">

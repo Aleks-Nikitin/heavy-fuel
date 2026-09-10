@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CATEGORY_DATA } from "@/lib/project-utils";
 import { ShoppingCartIcon, UserIcon } from "lucide-react";
+
 export default function DesktopHeader() {
   return (
     <div className="flex w-full items-center justify-between gap-8 font-semibold tracking-wider text-white">
@@ -31,10 +32,13 @@ export default function DesktopHeader() {
         />
       </div>
       <div className="flex items-center gap-8 font-semibold tracking-wider text-white">
+      
         <UserIcon className="text-white transition-colors hover:text-[#CCFF00]" />
+        
         <Link href="/cart">
           <ShoppingCartIcon className="text-white transition-colors hover:text-[#CCFF00]" />
         </Link>
+        
       </div>
     </div>
   );

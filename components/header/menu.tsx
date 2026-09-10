@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { CATEGORY_DATA } from "@/lib/project-utils";
 import Link from "next/link";
+import {signOut} from "@/actions/auth-actions";
 import { MenuIcon, XIcon } from "lucide-react";
 import {
   Drawer,
@@ -43,8 +44,15 @@ export default function Menu() {
             </Link>
           ))}
         </div>
+        <div className="flex flex-col scroll-fade overflow-y-auto p-4 mt-5 gap-4 text-xl tracking-wider text-white">
+          <Link href="/signup">
+            Sign up
+          </Link>
+          <Link href="/login" onClick={() => signOut()}>
+            Sign out
+          </Link>
+        </div>
         <DrawerFooter>
-          <h3>Log in</h3>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
