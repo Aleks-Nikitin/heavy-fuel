@@ -2,12 +2,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-export async function signUp(
-  name: string,
-  email: string,
-  password: string,
-) {
-    try {
+export async function signUp(name: string, email: string, password: string) {
+  try {
     const result = await auth.api.signUpEmail({
       body: {
         name,
@@ -22,11 +18,8 @@ export async function signUp(
     throw new Error("Failed to sign up with email");
   }
 }
-export async function signInWithEmail(
-  email: string,
-  password: string,
-) {
-    try {
+export async function signInWithEmail(email: string, password: string) {
+  try {
     const result = await auth.api.signInEmail({
       body: {
         email,
@@ -40,10 +33,10 @@ export async function signInWithEmail(
     throw new Error("Failed to sign in with email");
   }
 }
-export async function signOut(){
+export async function signOut() {
   try {
-     const result = await auth.api.signOut({ headers: await headers() });
-  return result;
+    const result = await auth.api.signOut({ headers: await headers() });
+    return result;
   } catch (error) {
     console.error("Error signing out:", error);
     throw new Error("Failed to sign out");

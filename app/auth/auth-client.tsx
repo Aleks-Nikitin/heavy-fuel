@@ -3,9 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  ShieldCheck,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signInWithEmail, signUp, signInSocial } from "@/lib/actions/auth-actions";
+import {
+  signInWithEmail,
+  signUp,
+  signInSocial,
+} from "@/lib/actions/auth-actions";
 export default function AuthClientPage() {
   const router = useRouter();
   const [isSignIn, setIsSignIn] = useState(true);
@@ -25,7 +37,7 @@ export default function AuthClientPage() {
       setError(
         `Error authenticating with ${provider}: ${
           err instanceof Error ? err.message : "Unknown error"
-        }`
+        }`,
       );
     } finally {
       setIsLoading(false);
@@ -43,23 +55,21 @@ export default function AuthClientPage() {
         if (!result?.user) {
           setError("Invalid email or password");
         } else {
-          router.push("/");
-          router.refresh();
+          window.location.href = "/";
         }
       } else {
         const result = await signUp(name, email, password);
         if (!result?.user) {
           setError("Failed to create account");
         } else {
-          router.push("/");
-          router.refresh();
+          window.location.href = "/";
         }
       }
     } catch (err) {
       setError(
         `Authentication error: ${
           err instanceof Error ? err.message : "Unknown error"
-        }`
+        }`,
       );
     } finally {
       setIsLoading(false);
@@ -187,7 +197,9 @@ export default function AuthClientPage() {
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>{isSignIn ? "Signing In..." : "Creating Account..."}</span>
+                <span>
+                  {isSignIn ? "Signing In..." : "Creating Account..."}
+                </span>
               </div>
             ) : (
               <>

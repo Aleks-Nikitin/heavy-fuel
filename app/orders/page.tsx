@@ -1,6 +1,10 @@
 "use client";
+import { getAllOrders } from "@/lib/actions/order-actions";
+import { useSession } from "@/lib/auth-client";
+import { OrderType } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
 import { Package, Truck, CheckCircle } from "lucide-react";
-
+import { redirect } from "next/navigation";
 const ORDERS_DATA = [
   {
     id: "HF-882910",
@@ -26,6 +30,17 @@ const ORDERS_DATA = [
 ];
 
 export default function OrdersPage() {
+  const { data: session } = useSession();
+  if (session?.session.userId === undefined) {
+    redirect("/auth");
+  }
+  const { isLoading, error, data } = useQuery({
+    queryKey: ["orders"],
+    queryFn: async () => {
+      const orders = await getAllOrders();
+      return orders;
+    },
+  });
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Delivered":
@@ -58,7 +73,7 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {ORDERS_DATA.map((order) => (
+              {data?.map((order: OrderType) => (
                 <tr
                   key={order.id}
                   className="border-b border-white/5 bg-[#13161C] hover:bg-[#181c24] transition-colors"
