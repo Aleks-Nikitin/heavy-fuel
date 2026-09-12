@@ -3,37 +3,24 @@ import { getAllOrders } from "@/lib/actions/order-actions";
 import { useSession } from "@/lib/auth-client";
 import { OrderType } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { Package, Truck, CheckCircle } from "lucide-react";
-import { redirect } from "next/navigation";
-const ORDERS_DATA = [
-  {
-    id: "HF-882910",
-    date: "Sep 02, 2026",
-    price: 134.97,
-    products: "Whey Protein (Chocolate), Creatine Monohydrate",
-    status: "Delivered",
-  },
-  {
-    id: "HF-883104",
-    date: "Sep 04, 2026",
-    price: 89.99,
-    products: "10mm Lever Belt (Matte Black)",
-    status: "Shipped",
-  },
-  {
-    id: "HF-884099",
-    date: "Sep 05, 2026",
-    price: 34.99,
-    products: "Pre-Workout Formula (Fruit Punch)",
-    status: "Processing",
-  },
-];
+import {
+  CheckCircle,
+  Truck,
+  Package,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Fragment, useEffect, useState } from "react";
 
 export default function OrdersPage() {
-  const { data: session } = useSession();
-  if (session?.session.userId === undefined) {
-    redirect("/auth");
-  }
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/auth");
+    }
+  }, [session, isPending, router]);
   const { isLoading, error, data } = useQuery({
     queryKey: ["orders"],
     queryFn: async () => {
@@ -41,6 +28,11 @@ export default function OrdersPage() {
       return orders;
     },
   });
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const toggleOrder = (orderId: string) => {
+    setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
+  };
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Delivered":
@@ -67,37 +59,105 @@ export default function OrdersPage() {
                 <th className="py-4 px-4 font-bold">Date</th>
                 <th className="py-4 px-4 font-bold">Total</th>
                 <th className="hidden md:table-cell py-4 px-4 font-bold">
-                  Products
+                  Items
                 </th>
                 <th className="py-4 px-4 font-bold">Status</th>
+                <th className="py-4 px-4"></th>
               </tr>
             </thead>
             <tbody>
-              {data?.map((order: OrderType) => (
-                <tr
-                  key={order.id}
-                  className="border-b border-white/5 bg-[#13161C] hover:bg-[#181c24] transition-colors"
-                >
-                  <td className="py-6 px-4 text-white font-bold tracking-wider">
-                    {order.id}
-                  </td>
-                  <td className="py-6 px-4 text-[#8E8E93] text-sm font-semibold">
-                    {order.date}
-                  </td>
-                  <td className="py-6 px-4 text-[#CCFF00] font-black">
-                    ${order.price.toFixed(2)}
-                  </td>
-                  <td className="hidden md:table-cell py-6 px-4 text-[#8E8E93] text-sm truncate max-w-[250px]">
-                    {order.products}
-                  </td>
-                  <td className="py-6 px-4">
-                    <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-                      {getStatusIcon(order.status)}
-                      {order.status}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {data?.map((order) => {
+                const isExpanded = expandedOrderId === order.id;
+
+                const totalItems = order.items.reduce(
+                  (acc, item) => acc + item.quantity,
+                  0,
+                );
+
+                return (
+                  <Fragment key={order.id}>
+                    <tr
+                      onClick={() => toggleOrder(order.id)}
+                      className={`border-b border-white/5 bg-[#13161C] hover:bg-[#181c24] transition-colors cursor-pointer ${
+                        isExpanded ? "border-transparent bg-[#181c24]" : ""
+                      }`}
+                    >
+                      <td className="py-6 px-4 text-white font-bold tracking-wider">
+                        #{order.id.slice(-8).toUpperCase()}
+                      </td>
+                      <td className="py-6 px-4 text-[#8E8E93] text-sm font-semibold">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-6 px-4 text-[#CCFF00] font-black">
+                        ${Number(order.totalAmount).toFixed(2)}
+                      </td>
+                      <td className="hidden md:table-cell py-6 px-4 text-[#8E8E93] text-sm font-bold uppercase tracking-wider">
+                        {totalItems} {totalItems === 1 ? "Item" : "Items"}
+                      </td>
+                      <td className="py-6 px-4">
+                        <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
+                          {getStatusIcon(order.status)}
+                          {order.status}
+                        </div>
+                      </td>
+                      <td className="py-6 px-4 text-right text-[#8E8E93]">
+                        {isExpanded ? (
+                          <ChevronUp size={20} />
+                        ) : (
+                          <ChevronDown size={20} />
+                        )}
+                      </td>
+                    </tr>
+
+                    {isExpanded && (
+                      <tr className="bg-[#0B0D10] border-b border-white/10">
+                        <td colSpan={6} className="p-0">
+                          <div className="p-6 md:p-8 animate-in slide-in-from-top-2 fade-in duration-200">
+                            <h3 className="text-[#8E8E93] text-xs uppercase tracking-widest font-bold mb-6">
+                              Order Items
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {order.items.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center gap-4 bg-[#13161C] p-4 rounded-xl border border-white/5 hover:border-white/10 transition-colors"
+                                >
+                                  <div className="w-20 h-20 bg-white/5 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img
+                                      src={item.variant.product.image}
+                                      alt={item.variant.product.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-white font-bold uppercase tracking-wide text-sm truncate">
+                                      {item.variant.product.name}
+                                    </p>
+                                    <p className="text-[#8E8E93] text-xs font-semibold uppercase tracking-wider mt-1">
+                                      Size: {item.variant.size}
+                                    </p>
+                                  </div>
+
+                                  <div className="text-right">
+                                    <p className="text-[#CCFF00] font-black">
+                                      ${Number(item.priceAtPurchase).toFixed(2)}
+                                    </p>
+                                    <p className="text-[#8E8E93] text-xs font-semibold uppercase tracking-wider mt-1">
+                                      Qty: {item.quantity}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -3,10 +3,24 @@ import { faker } from "@faker-js/faker";
 import { prisma } from "@/lib/prisma";
 
 async function main() {
+  const mockUserIds = [
+    "mock-user-alex",
+    "mock-user-jordan",
+    "mock-user-taylor",
+  ];
+
+  await prisma.order.deleteMany({
+    where: { userId: { in: mockUserIds } },
+  });
+  await prisma.user.deleteMany({
+    where: { id: { in: mockUserIds } },
+  });
   await prisma.review.deleteMany();
   await prisma.productVariant.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+
+  const variants = [];
 
   for (let i = 0; i < 4; i++) {
     const title = `${faker.commerce.department()} ${i + 1}`;
@@ -28,7 +42,7 @@ async function main() {
         },
       });
       for (let k = 0; k < 3; k++) {
-        await prisma.productVariant.create({
+        const variant = await prisma.productVariant.create({
           data: {
             size: faker.helpers.arrayElement(["S", "M", "L", "XL"]),
             variant: faker.helpers.arrayElement([
@@ -43,7 +57,64 @@ async function main() {
             productId: product.id,
           },
         });
+        variants.push(variant);
       }
+    }
+  }
+
+  const users = await Promise.all([
+    prisma.user.create({
+      data: {
+        id: "mock-user-alex",
+        name: "Alex Morgan",
+        email: "alex@example.com",
+        emailVerified: true,
+        isAdmin: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        id: "mock-user-jordan",
+        name: "Jordan Lee",
+        email: "jordan@example.com",
+        emailVerified: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        id: "mock-user-taylor",
+        name: "Taylor Reed",
+        email: "taylor@example.com",
+        emailVerified: true,
+      },
+    }),
+  ]);
+
+  const statuses = ["DELIVERED", "PROCESSING", "PENDING"] as const;
+
+  for (const [userIndex, user] of users.entries()) {
+    for (let orderIndex = 0; orderIndex < 2; orderIndex++) {
+      const orderVariants = variants.slice(orderIndex * 2, orderIndex * 2 + 2);
+      const quantity = userIndex + orderIndex + 1;
+      const totalAmount = orderVariants.reduce(
+        (total, variant) => total + Number(variant.price) * quantity,
+        0,
+      );
+
+      await prisma.order.create({
+        data: {
+          userId: user.id,
+          totalAmount,
+          status: statuses[(userIndex + orderIndex) % statuses.length],
+          items: {
+            create: orderVariants.map((variant) => ({
+              productVariantId: variant.id,
+              quantity,
+              priceAtPurchase: variant.price,
+            })),
+          },
+        },
+      });
     }
   }
 }
