@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { OrderStatus } from "@/lib/types";
+import { toast } from "react-toastify";
 export default function StatusUpdater({ order, mutation, getStatusIcon }: any) {
   const [selectedStatus, setSelectedStatus] = useState(order.status);
 
@@ -13,8 +14,10 @@ export default function StatusUpdater({ order, mutation, getStatusIcon }: any) {
 
   const statusOptions: { label: string; value: OrderStatus }[] = [
     { label: "Pending", value: "PENDING" },
+    { label: "Processing", value: "PROCESSING" },
     { label: "Shipped", value: "SHIPPED" },
     { label: "Delivered", value: "DELIVERED" },
+    { label: "Cancelled", value: "CANCELLED" },
   ];
 
   return (
@@ -27,6 +30,7 @@ export default function StatusUpdater({ order, mutation, getStatusIcon }: any) {
           orderId: order.id,
           status: selectedStatus as OrderStatus,
         });
+        toast.success(`Order status updated to ${selectedStatus}`);
       }}
     >
       <div className="relative flex items-center gap-2 rounded-md bg-zinc-800 pl-3 pr-8 py-1.5 text-sm font-bold uppercase tracking-wider text-white border border-zinc-700 hover:bg-zinc-700 transition">

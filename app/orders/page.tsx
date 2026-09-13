@@ -11,6 +11,8 @@ import {
   Truck,
   Package,
   ChevronDown,
+  RefreshCw,
+  XCircle,
   ChevronUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -51,12 +53,24 @@ export default function OrdersPage() {
   const toggleOrder = (orderId: string) => {
     setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
   };
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: OrderStatus | string) => {
     switch (status) {
+      case "DELIVERED":
       case "Delivered":
         return <CheckCircle className="w-4 h-4 text-[#CCFF00]" />;
+
+      case "SHIPPED":
       case "Shipped":
         return <Truck className="w-4 h-4 text-white" />;
+
+      case "PROCESSING":
+      case "Processing":
+        return <RefreshCw className="w-4 h-4 text-[#38BDF8] animate-spin" />;
+
+      case "CANCELLED":
+      case "Cancelled":
+        return <XCircle className="w-4 h-4 text-[#EF4444]" />;
+
       default:
         return <Package className="w-4 h-4 text-[#8E8E93]" />;
     }
