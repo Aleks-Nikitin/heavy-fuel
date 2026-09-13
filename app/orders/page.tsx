@@ -2,7 +2,10 @@
 import { getAllOrders } from "@/lib/actions/order-actions";
 import { useSession } from "@/lib/auth-client";
 import { OrderType } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
+import StatusUpdater from "@/components/orders/status-updater";
+import { OrderStatus } from "@/lib/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateOrderStatus } from "@/lib/actions/order-actions";
 import {
   CheckCircle,
   Truck,
@@ -28,6 +31,21 @@ export default function OrdersPage() {
       return orders;
     },
   });
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: async ({
+      orderId,
+      status,
+    }: {
+      orderId: string;
+      status: OrderStatus;
+    }) => {
+      return await updateOrderStatus(orderId, status);
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const toggleOrder = (orderId: string) => {
@@ -43,7 +61,11 @@ export default function OrdersPage() {
         return <Package className="w-4 h-4 text-[#8E8E93]" />;
     }
   };
-
+  // const handleStatusUpdate = async (orderId: string, e: HTMLFormElement) => {
+  //   const formData = new FormData(e);
+  //   const newStatus = formData.get("status") as string;
+  //   mutation.mutate({ orderId, status: newStatus as OrderStatus });
+  // };
   return (
     <main className="min-h-screen bg-[#0B0D10] py-12 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -95,10 +117,18 @@ export default function OrdersPage() {
                         {totalItems} {totalItems === 1 ? "Item" : "Items"}
                       </td>
                       <td className="py-6 px-4">
-                        <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-                          {getStatusIcon(order.status)}
-                          {order.status}
-                        </div>
+                        {session?.user.isAdmin ? (
+                          <StatusUpdater
+                            order={order}
+                            mutation={mutation}
+                            getStatusIcon={getStatusIcon}
+                          />
+                        ) : (
+                          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
+                            {getStatusIcon(order.status)}
+                            {order.status}
+                          </div>
+                        )}
                       </td>
                       <td className="py-6 px-4 text-right text-[#8E8E93]">
                         {isExpanded ? (

@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import type { OrderStatus } from "@/lib/types";
 export async function getAllOrders() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -49,5 +50,25 @@ export async function getAllOrders() {
       console.error("Error fetching orders:", error);
       throw new Error("Failed to fetch orders");
     }
+  }
+}
+export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user?.isAdmin) {
+    throw new Error("User not authorized");
+  }
+  try {
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
+    if (updatedOrder) {
+      return { msg: "Order status updated successfully" };
+    }
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    throw new Error("Failed to update order status");
   }
 }

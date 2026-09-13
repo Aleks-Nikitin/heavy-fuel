@@ -10,3 +10,9 @@ export type OrderType = {
   createdAt: string;
   updatedAt: string;
 };
+export type OrderStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED";
