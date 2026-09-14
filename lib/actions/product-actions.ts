@@ -2,15 +2,28 @@
 
 import { prisma } from "@/lib/prisma";
 import type { ProductDisplay } from "@/lib/product-types";
-
+import { revalidatePath } from "next/cache";
 function toProductDisplay(product: {
   id: string;
   name: string;
   image: string;
   description: string;
   category: { title: string; slug: string };
-  variants: { id: string; size: string; variant: string; price: unknown; stock: number }[];
-  reviews: { id: string; rating: number; title: string; body: string; author: string; createdAt: Date }[];
+  variants: {
+    id: string;
+    size: string;
+    variant: string;
+    price: unknown;
+    stock: number;
+  }[];
+  reviews: {
+    id: string;
+    rating: number;
+    title: string;
+    body: string;
+    author: string;
+    createdAt: Date;
+  }[];
 }): ProductDisplay {
   return {
     ...product,
@@ -30,7 +43,7 @@ export async function getProductsByCategory(categorySlug: string) {
     const products = await prisma.product.findMany({
       where: {
         category: {
-          slug: categorySlug,
+          title: categorySlug,
         },
       },
       include: {
@@ -54,6 +67,21 @@ export async function getProducts() {
 
   return products.map(toProductDisplay);
 }
+export async function getAllProducts() {
+  const products = await prisma.product.findMany({
+    include: { category: true, variants: true, reviews: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return products.map(toProductDisplay);
+}
+export async function getValidVariantIds(variantIds: string[]) {
+  const validVariants = await prisma.productVariant.findMany({
+    where: { id: { in: variantIds } },
+    select: { id: true },
+  });
+  return validVariants.map((v) => v.id);
+}
 export async function getProductById(productId: string) {
   try {
     const product = await prisma.product.findUnique({
@@ -70,5 +98,20 @@ export async function getProductById(productId: string) {
   } catch (error) {
     console.error("Error fetching product by ID:", error);
     throw new Error("Failed to fetch product by ID");
+  }
+}
+
+export async function deleteProduct(id: string) {
+  try {
+    await prisma.product.delete({
+      where: { id },
+    });
+    revalidatePath("/");
+    revalidatePath("/products");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw new Error("Failed to delete product");
   }
 }

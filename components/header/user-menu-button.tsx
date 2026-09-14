@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Package, LogOut, LogIn } from "lucide-react";
+import { User, Package, LogOut, LogIn, Shield } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 
 export default function UserMenuButton() {
@@ -45,7 +45,16 @@ export default function UserMenuButton() {
               {session.user.email}
             </p>
           </div>
-
+          {session.user.isAdmin && (
+            <Link
+              href="/admin/products"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#CCFF00] hover:bg-white/5 transition-colors border-b border-white/5 mb-1"
+            >
+              <Shield size={16} />
+              Admin Panel
+            </Link>
+          )}
           <Link
             href="/profile"
             onClick={() => setIsOpen(false)}

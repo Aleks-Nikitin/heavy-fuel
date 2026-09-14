@@ -75,11 +75,6 @@ export default function OrdersPage() {
         return <Package className="w-4 h-4 text-[#8E8E93]" />;
     }
   };
-  // const handleStatusUpdate = async (orderId: string, e: HTMLFormElement) => {
-  //   const formData = new FormData(e);
-  //   const newStatus = formData.get("status") as string;
-  //   mutation.mutate({ orderId, status: newStatus as OrderStatus });
-  // };
   return (
     <main className="min-h-screen bg-[#0B0D10] py-12 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
