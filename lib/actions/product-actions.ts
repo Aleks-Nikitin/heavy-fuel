@@ -21,7 +21,7 @@ function toProductDisplay(product: {
     rating: number;
     title: string;
     body: string;
-    author: string;
+    userId: string;
     createdAt: Date;
   }[];
 }): ProductDisplay {
@@ -49,7 +49,14 @@ export async function getProductsByCategory(categorySlug: string) {
       include: {
         category: true,
         variants: true,
-        reviews: true,
+        reviews: {
+          include: {
+            user: {
+              select: { name: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
     return products.map(toProductDisplay);
@@ -91,7 +98,14 @@ export async function getProductById(productId: string) {
       include: {
         category: true,
         variants: true,
-        reviews: true,
+        reviews: {
+          include: {
+            user: {
+              select: { name: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
     return product ? toProductDisplay(product) : null;
@@ -100,7 +114,6 @@ export async function getProductById(productId: string) {
     throw new Error("Failed to fetch product by ID");
   }
 }
-
 export async function deleteProduct(id: string) {
   try {
     await prisma.product.delete({

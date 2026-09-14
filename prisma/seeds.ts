@@ -19,49 +19,11 @@ async function main() {
   await prisma.productVariant.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.review.deleteMany();
 
   const variants = [];
-
-  for (let i = 0; i < 4; i++) {
-    const title = `${faker.commerce.department()} ${i + 1}`;
-    const category = await prisma.category.create({
-      data: {
-        title,
-        img: faker.image.url(),
-        slug: faker.helpers.slugify(title).toLowerCase(),
-      },
-    });
-
-    for (let j = 0; j < 4; j++) {
-      const product = await prisma.product.create({
-        data: {
-          name: faker.commerce.productName(),
-          image: faker.image.url(),
-          description: faker.commerce.productDescription(),
-          categoryId: category.id,
-        },
-      });
-      for (let k = 0; k < 3; k++) {
-        const variant = await prisma.productVariant.create({
-          data: {
-            size: faker.helpers.arrayElement(["S", "M", "L", "XL"]),
-            variant: faker.helpers.arrayElement([
-              "Red",
-              "Blue",
-              "Green",
-              "Black",
-            ]),
-            stock: faker.number.int({ min: 0, max: 100 }),
-            sku: faker.string.uuid(),
-            price: parseFloat(faker.commerce.price()),
-            productId: product.id,
-          },
-        });
-        variants.push(variant);
-      }
-    }
-  }
-
+  const categories = ["apparel", "gear", "supplements"];
   const users = await Promise.all([
     prisma.user.create({
       data: {
@@ -89,6 +51,59 @@ async function main() {
       },
     }),
   ]);
+  for (let i = 0; i < 3; i++) {
+    const title = categories[i];
+    const category = await prisma.category.create({
+      data: {
+        title,
+        img: faker.image.url(),
+        slug: faker.helpers.slugify(title).toLowerCase(),
+      },
+    });
+
+    for (let j = 0; j < 4; j++) {
+      const product = await prisma.product.create({
+        data: {
+          name: faker.commerce.productName(),
+          image: faker.image.url(),
+          description: faker.commerce.productDescription(),
+          categoryId: category.id,
+        },
+      });
+
+      for (let k = 0; k < 3; k++) {
+        const variant = await prisma.productVariant.create({
+          data: {
+            size: faker.helpers.arrayElement(["S", "M", "L", "XL"]),
+            variant: faker.helpers.arrayElement([
+              "Red",
+              "Blue",
+              "Green",
+              "Black",
+            ]),
+            stock: faker.number.int({ min: 0, max: 100 }),
+            sku: faker.string.uuid(),
+            price: parseFloat(faker.commerce.price()),
+            productId: product.id,
+          },
+        });
+        variants.push(variant);
+      }
+      for (const [userIndex, user] of users.entries()) {
+        for (let reviewIndex = 0; reviewIndex < 4; reviewIndex++) {
+          await prisma.review.create({
+            data: {
+              rating: faker.number.int({ min: 1, max: 5 }),
+              title: faker.lorem.sentence(),
+              body: faker.lorem.paragraph(),
+              userId: user.id,
+              productId: product.id,
+            },
+          });
+        }
+      }
+    }
+  }
 
   const statuses = ["DELIVERED", "PROCESSING", "PENDING"] as const;
 

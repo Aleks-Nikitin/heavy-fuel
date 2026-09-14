@@ -1,35 +1,39 @@
 import { Star } from "lucide-react";
 
-const MOCK_REVIEWS = [
-  {
-    id: 1,
-    author: "Marcus T.",
-    date: "Aug 28, 2026",
-    rating: 5,
-    title: "Best tasting protein on the market.",
-    body: "Mixes perfectly with no clumps. The chocolate flavor isn't overly sweet like other brands. Noticed a solid difference in my recovery times since switching to the HeavyFuel stack.",
-  },
-  {
-    id: 2,
-    author: "David L.",
-    date: "Aug 15, 2026",
-    rating: 5,
-    title: "Heavy duty and reliable.",
-    body: "Clinical dosing is exactly what I was looking for. No proprietary blends, just straight performance. Will be subscribing.",
-  },
-  {
-    id: 3,
-    author: "Sarah J.",
-    date: "Jul 10, 2026",
-    rating: 4,
-    title: "Great results, shipping was a day late.",
-    body: "The product itself is 10/10. Easily the best formula I've used. Giving 4 stars just because FedEx delayed my package by a day, but the HeavyFuel team was super responsive.",
-  },
-];
+interface Review {
+  id: string;
+  rating: number;
+  title: string;
+  body: string;
+  createdAt: Date | string;
+  user?: {
+    name: string;
+  };
+}
 
-export default function Reviews() {
-  const averageRating = 4.8;
-  const totalReviews = 124;
+export default function Reviews({ reviews }: { reviews: Review[] }) {
+  const totalReviews = reviews.length;
+  const averageRating =
+    totalReviews > 0
+      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(
+          1,
+        )
+      : "0.0";
+
+  if (totalReviews === 0) {
+    return (
+      <section className="w-full py-16 mt-16 border-t border-white/10">
+        <div className="text-center">
+          <h2 className="text-2xl font-black uppercase text-white tracking-tight mb-2">
+            Customer Reviews
+          </h2>
+          <p className="text-[#8E8E93] text-sm">
+            No reviews yet for this product.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full py-16 mt-16 border-t border-white/10">
@@ -49,7 +53,7 @@ export default function Reviews() {
                   <Star
                     key={star}
                     className={`w-5 h-5 ${
-                      star <= Math.round(averageRating)
+                      star <= Math.round(Number(averageRating))
                         ? "fill-[#CCFF00] text-[#CCFF00]"
                         : "fill-transparent text-white/20"
                     }`}
@@ -67,49 +71,54 @@ export default function Reviews() {
           </button>
         </div>
         <div className="w-full md:w-2/3 flex flex-col gap-6">
-          {MOCK_REVIEWS.map((review) => (
-            <div
-              key={review.id}
-              className="p-6 md:p-8 rounded-3xl bg-[#13161C] border border-white/5 flex flex-col gap-4"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 ${
-                          star <= review.rating
-                            ? "fill-[#CCFF00] text-[#CCFF00]"
-                            : "fill-transparent text-white/20"
-                        }`}
-                      />
-                    ))}
+          {reviews.map((review) => {
+            const authorName = review.user?.name || "Anonymous User";
+            const formattedDate = new Date(review.createdAt).toLocaleDateString(
+              "en-US",
+              { month: "short", day: "numeric", year: "numeric" },
+            );
+
+            return (
+              <div
+                key={review.id}
+                className="p-6 md:p-8 rounded-3xl bg-[#13161C] border border-white/5 flex flex-col gap-4"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= review.rating
+                              ? "fill-[#CCFF00] text-[#CCFF00]"
+                              : "fill-transparent text-white/20"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <h3 className="text-white font-bold text-lg">
+                      {review.title}
+                    </h3>
                   </div>
-                  <h3 className="text-white font-bold text-lg">
-                    {review.title}
-                  </h3>
+                  <span className="text-[#8E8E93] text-sm font-semibold whitespace-nowrap">
+                    {formattedDate}
+                  </span>
                 </div>
-                <span className="text-[#8E8E93] text-sm font-semibold whitespace-nowrap">
-                  {review.date}
-                </span>
-              </div>
 
-              <p className="text-[#8E8E93] leading-relaxed">{review.body}</p>
+                <p className="text-[#8E8E93] leading-relaxed">{review.body}</p>
 
-              <div className="flex items-center gap-2 mt-2">
-                <span className="w-8 h-8 rounded-full bg-[#0B0D10] border border-white/10 flex items-center justify-center text-white font-bold text-sm">
-                  {review.author.charAt(0)}
-                </span>
-                <span className="text-white font-bold text-sm uppercase tracking-wider">
-                  {review.author}
-                </span>
-                <span className="text-[#CCFF00] text-xs font-bold uppercase tracking-widest ml-2 flex items-center gap-1">
-                  ✓ Verified Buyer
-                </span>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="w-8 h-8 rounded-full bg-[#0B0D10] border border-white/10 flex items-center justify-center text-white font-bold text-sm uppercase">
+                    {authorName.charAt(0)}
+                  </span>
+                  <span className="text-white font-bold text-sm uppercase tracking-wider">
+                    {authorName}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

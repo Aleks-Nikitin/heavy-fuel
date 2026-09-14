@@ -21,7 +21,7 @@ export type ProductDisplay = {
     rating: number;
     title: string;
     body: string;
-    author: string;
+    userId: string;
     createdAt: string;
   }[];
 };
