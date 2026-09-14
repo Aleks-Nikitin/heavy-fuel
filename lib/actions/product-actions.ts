@@ -82,6 +82,27 @@ export async function getAllProducts() {
 
   return products.map(toProductDisplay);
 }
+export async function createReviewByProductId(
+  productId: string,
+  reviewData: { rating: number; title: string; body: string; userId: string },
+) {
+  try {
+    const review = await prisma.review.create({
+      data: {
+        rating: reviewData.rating,
+        title: reviewData.title,
+        body: reviewData.body,
+        userId: reviewData.userId,
+        productId: productId,
+      },
+    });
+    revalidatePath(`/products/${productId}`);
+    return review;
+  } catch (error) {
+    console.error("Error creating review:", error);
+    throw new Error("Failed to create review");
+  }
+}
 export async function getValidVariantIds(variantIds: string[]) {
   const validVariants = await prisma.productVariant.findMany({
     where: { id: { in: variantIds } },

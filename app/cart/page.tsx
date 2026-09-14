@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { getValidVariantIds } from "@/lib/actions/product-actions";
 import { useCartStore } from "@/lib/store";
 import { ShieldCheck } from "lucide-react";
-import { useEffect } from "react";
 
 export default function CartPage() {
   const {
