@@ -4,6 +4,7 @@ import { CATEGORY_DATA } from "@/lib/project-utils";
 import { useSession } from "@/lib/auth-client";
 import UserMenuButton from "./user-menu-button";
 import { ShoppingCartIcon, User, UserIcon } from "lucide-react";
+import CartIcon from "./cart-icon";
 
 export default function DesktopHeader() {
   const { data: session, isPending } = useSession();
@@ -41,9 +42,7 @@ export default function DesktopHeader() {
           
         </Link> */}
         <UserMenuButton />
-        <Link href="/cart">
-          <ShoppingCartIcon className="text-white transition-colors hover:text-[#CCFF00]" />
-        </Link>
+        <CartIcon mobile={false} />
       </div>
     </div>
   );

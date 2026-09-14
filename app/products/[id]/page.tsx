@@ -35,10 +35,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.category.title}
               </span>
               <span className="flex items-center text-[#CCFF00] text-sm font-bold">
-                ★ {product.reviews.length
+                ★{" "}
+                {product.reviews.length
                   ? (
-                      product.reviews.reduce((sum, review) => sum + review.rating, 0) /
-                      product.reviews.length
+                      product.reviews.reduce(
+                        (sum, review) => sum + review.rating,
+                        0,
+                      ) / product.reviews.length
                     ).toFixed(1)
                   : "0.0"}
                 <span className="text-[#8E8E93] ml-1">
@@ -60,6 +63,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <Price
               variants={product.variants}
               id={product.id}
+              image={product.image}
+              name={product.name}
             />
           </div>
         </div>

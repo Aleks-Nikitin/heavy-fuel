@@ -5,27 +5,50 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
 import { ProductVariantDisplay } from "@/lib/product-types";
+import { useCartStore } from "@/lib/store";
+import { toast } from "react-toastify";
 
 export default function Price({
   variants,
   id,
+  name,
+  image,
 }: {
   variants: ProductVariantDisplay[];
   id: string;
+  name: string;
+  image: string;
 }) {
+  const { addToCart } = useCartStore();
   const [quantity, setQuantity] = useState(1);
   const [selectedSizeIdx, setSelectedSizeIdx] = useState(0);
   const sizes = [...new Set(variants.map((variant) => variant.size))];
   const flavors = [...new Set(variants.map((variant) => variant.variant))];
   const [selectedVariant, setSelectedVariant] = useState(flavors[0]);
   const selectedSize = sizes[selectedSizeIdx];
-  const selectedProductVariant = variants.find(
-    (variant) =>
-      variant.size === selectedSize && variant.variant === selectedVariant,
-  ) ?? variants[0];
+  const selectedProductVariant =
+    variants.find(
+      (variant) =>
+        variant.size === selectedSize && variant.variant === selectedVariant,
+    ) ?? variants[0];
   const currentPrice = selectedProductVariant?.price ?? 0;
   const totalPrice = currentPrice * quantity;
-
+  const handleAddToCart = () => {
+    addToCart({
+      id,
+      variant: selectedVariant,
+      size: selectedSize,
+      quantity,
+      productVariantId:
+        selectedProductVariant?.id ||
+        `${id}-${selectedVariant}-${selectedSize}`,
+      price: currentPrice,
+      priceAtPurchase: currentPrice,
+      name,
+      image,
+    });
+    toast.success("Item added to cart!");
+  };
   return (
     <div className="flex flex-col gap-8">
       <div className="text-4xl font-black text-[#CCFF00]">
@@ -97,15 +120,7 @@ export default function Price({
 
         <Button
           className="py-4 px-6 md:py-1 xl:flex-1 h-16 rounded-2xl bg-[#CCFF00] text-black font-black uppercase tracking-wider text-lg hover:bg-[#b3e600] transition-all hover:scale-[1.02]"
-          onClick={() => {
-            console.log("Added to cart:", {
-              id,
-              variant: selectedVariant,
-              size: selectedSize,
-              quantity,
-              totalPrice,
-            });
-          }}
+          onClick={handleAddToCart}
         >
           <ShoppingCart className="w-6 h-6 mr-3" />
           Add to Cart

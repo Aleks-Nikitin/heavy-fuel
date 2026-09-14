@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MenuIcon, ShoppingCartIcon, UserIcon, SearchIcon } from "lucide-react";
 import Menu from "./menu";
 import UserMenuButton from "./user-menu-button";
+import CartIcon from "./cart-icon";
 export default function MobileHeader() {
   const { data: session, isPending } = useSession();
   return (
@@ -19,9 +20,7 @@ export default function MobileHeader() {
       <div className="flex items-center gap-8">
         <UserMenuButton />
         <SearchIcon className="text-white" />
-        <Link href="/cart">
-          <ShoppingCartIcon className="text-white" />
-        </Link>
+        <CartIcon mobile={true} />
         <Menu />
       </div>
     </div>
