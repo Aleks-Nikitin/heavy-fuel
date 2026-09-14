@@ -21,17 +21,15 @@ export default function Price({
 }) {
   const { addToCart } = useCartStore();
   const [quantity, setQuantity] = useState(1);
-  const [selectedSizeIdx, setSelectedSizeIdx] = useState(0);
   const sizes = [...new Set(variants.map((variant) => variant.size))];
   const flavors = [...new Set(variants.map((variant) => variant.variant))];
   const [selectedVariant, setSelectedVariant] = useState(flavors[0]);
-  const selectedSize = sizes[selectedSizeIdx];
-  const selectedProductVariant =
-    variants.find(
-      (variant) =>
-        variant.size === selectedSize && variant.variant === selectedVariant,
-    ) ?? variants[0];
-  const currentPrice = selectedProductVariant?.price ?? 0;
+  const [selectedSize, setSelectedSize] = useState(sizes[0]);
+  const selectedProductVariant = variants.find(
+    (variant) =>
+      variant.size === selectedSize && variant.variant === selectedVariant,
+  );
+  const currentPrice = selectedProductVariant?.price ?? variants[0]?.price ?? 0;
   const totalPrice = currentPrice * quantity;
   const handleAddToCart = () => {
     addToCart({
@@ -82,22 +80,20 @@ export default function Price({
           Select Size
         </h3>
         <div className="flex flex-wrap gap-3">
-          {sizes.map((size, index) => {
-            return (
-              <Button
-                key={size}
-                onClick={() => setSelectedSizeIdx(index)}
-                className={cn(
-                  "px-5 py-3 rounded-xl border transition-all duration-200 text-sm font-bold uppercase tracking-wide",
-                  selectedSizeIdx === index
-                    ? "border-[#CCFF00] bg-[#CCFF00]/10 text-[#CCFF00]"
-                    : "border-white/10 bg-[#13161C] text-[#8E8E93] hover:border-white/30 hover:text-white",
-                )}
-              >
-                {size}
-              </Button>
-            );
-          })}
+          {sizes.map((size) => (
+            <Button
+              key={size}
+              onClick={() => setSelectedSize(size)}
+              className={cn(
+                "px-5 py-3 rounded-xl border transition-all duration-200 text-sm font-bold uppercase tracking-wide",
+                selectedSize === size
+                  ? "border-[#CCFF00] bg-[#CCFF00]/10 text-[#CCFF00]"
+                  : "border-white/10 bg-[#13161C] text-[#8E8E93] hover:border-white/30 hover:text-white",
+              )}
+            >
+              {size}
+            </Button>
+          ))}
         </div>
       </div>
 
