@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
@@ -25,10 +25,15 @@ export default function Price({
   const flavors = [...new Set(variants.map((variant) => variant.variant))];
   const [selectedVariant, setSelectedVariant] = useState(flavors[0]);
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
+
   const selectedProductVariant = variants.find(
     (variant) =>
       variant.size === selectedSize && variant.variant === selectedVariant,
   );
+
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedVariant, selectedSize]);
 
   const currentPrice = selectedProductVariant?.price ?? variants[0]?.price ?? 0;
   const totalPrice = currentPrice * quantity;
@@ -46,6 +51,7 @@ export default function Price({
   const isOutOfStock = currentStock === 0;
   const isMaxStockInCart = !isOutOfStock && remainingStock === 0;
   const isLowStock = currentStock > 0 && currentStock <= 5;
+
   const handleAddToCart = () => {
     if (quantity > remainingStock) {
       if (isMaxStockInCart) {
@@ -59,6 +65,7 @@ export default function Price({
       }
       return;
     }
+
     addToCart({
       id,
       variant: selectedVariant,
@@ -71,9 +78,13 @@ export default function Price({
       priceAtPurchase: currentPrice,
       name,
       image,
+      stock: currentStock,
     });
+
     toast.success("Item added to cart!");
+    setQuantity(1);
   };
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-end justify-between">

@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 export default function CartCard({ item }: { item: any }) {
   const { removeFromCart, updateQuantity } = useCartStore();
+  const maxStock = item.stock ?? 99;
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6 p-5 rounded-3xl border border-white/10 bg-[#13161C] hover:border-white/20 transition-all">
@@ -52,14 +53,20 @@ export default function CartCard({ item }: { item: any }) {
             >
               <Minus className="w-4 h-4" />
             </button>
+
             <span className="text-white font-black">{item.quantity}</span>
+
             <button
-              disabled={item.quantity >= item.stock}
+              disabled={item.quantity >= maxStock}
               onClick={() => {
-                if (item.quantity < item.stock) {
+                if (item.quantity < maxStock) {
                   updateQuantity(item.productVariantId, item.quantity + 1);
                 } else {
-                  toast.warning(`Maximum stock limit reached (${item.stock}).`);
+                  toast.warning(
+                    item.stock !== undefined
+                      ? `Maximum stock limit reached (${maxStock}).`
+                      : "Maximum allowed limit reached.",
+                  );
                 }
               }}
               className="w-8 h-8 flex items-center justify-center text-[#8E8E93] hover:text-[#CCFF00] transition-colors disabled:opacity-30 disabled:hover:text-[#8E8E93]"
