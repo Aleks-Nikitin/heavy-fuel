@@ -19,6 +19,7 @@ export type CartItemType = {
   productVariantId: string;
   productId: string;
   name: string;
+  stock: number;
   variantName: string;
   size: string;
   image: string;

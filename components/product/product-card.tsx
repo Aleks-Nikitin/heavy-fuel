@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ShoppingCart, Star } from "lucide-react";
+import { ShoppingCart, Star, Minus, Plus } from "lucide-react";
 import { toast } from "react-toastify";
 import { useCartStore } from "@/lib/store";
 import { ProductDisplay } from "@/lib/product-types";
@@ -18,25 +18,35 @@ import {
 } from "@/components/ui/select";
 
 export default function ProductCard({ product }: { product: ProductDisplay }) {
-  const { addToCart } = useCartStore();
+  const { addToCart, products } = useCartStore();
   const [quantity, setQuantity] = useState(1);
-
   const sizes = [...new Set(product.variants.map((variant) => variant.size))];
   const flavors = [
     ...new Set(product.variants.map((variant) => variant.variant)),
   ];
-
   const [selectedVariant, setSelectedVariant] = useState(flavors[0]);
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
-
   const selectedProductVariant = product.variants.find(
     (variant) =>
       variant.size === selectedSize && variant.variant === selectedVariant,
   );
-
   const currentPrice =
     selectedProductVariant?.price ?? product.variants[0]?.price ?? 0;
   const totalPrice = currentPrice * quantity;
+  const currentStock = selectedProductVariant?.stock ?? 0;
+
+  const existingCartItem = products.find(
+    (item) =>
+      item.productVariantId ===
+      (selectedProductVariant?.id ||
+        `${product.id}-${selectedVariant}-${selectedSize}`),
+  );
+
+  const existingCartQty = existingCartItem?.quantity ?? 0;
+  const remainingStock = Math.max(0, currentStock - existingCartQty);
+
+  const isOutOfStock = currentStock === 0;
+  const isMaxStockInCart = !isOutOfStock && remainingStock === 0;
 
   const averageRating = product.reviews.length
     ? (
@@ -45,9 +55,19 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
       ).toFixed(1)
     : "0.0";
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleAddToCart = () => {
+    if (quantity > remainingStock) {
+      if (isMaxStockInCart) {
+        toast.error(
+          `Cannot add more. You already have all ${currentStock} available units in your cart!`,
+        );
+      } else {
+        toast.error(
+          `Only ${remainingStock} unit(s) remaining for this variant.`,
+        );
+      }
+      return;
+    }
 
     addToCart({
       id: product.id,
@@ -63,6 +83,7 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
       image: product.image,
     });
     toast.success("Item added to cart!");
+    setQuantity(1);
   };
 
   return (
@@ -155,19 +176,62 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
             </SelectContent>
           </Select>
         </div>
-
-        <div className="flex items-center justify-between w-full gap-4">
+        <div className="flex flex-col items-center justify-between w-full gap-4">
           <span className="text-[#CCFF00] font-black text-2xl shrink-0">
             ${totalPrice.toFixed(2)}
           </span>
-
-          <Button
-            onClick={handleAddToCart}
-            className="flex-1 h-12 rounded-xl bg-[#CCFF00] text-black font-black uppercase tracking-wider text-sm hover:bg-[#b3e600] transition-all hover:scale-[1.02]"
+          <div
+            className="flex flex-row items-center gap-4 pt-4"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            Add
-          </Button>
+            <div className="flex items-center justify-between border border-white/15 bg-[#13161C] rounded-2xl px-2 h-12 w-28 shrink-0">
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={quantity <= 1 || remainingStock === 0}
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-8 h-8 p-0 flex items-center justify-center text-[#8E8E93] hover:text-[#CCFF00] transition-colors disabled:opacity-30 disabled:hover:text-[#8E8E93]"
+              >
+                <Minus className="w-4 h-4" />
+              </Button>
+
+              <span className="text-white font-black">{quantity}</span>
+
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={quantity >= remainingStock}
+                onClick={() => {
+                  if (quantity < remainingStock) {
+                    setQuantity(quantity + 1);
+                  } else {
+                    toast.warning(
+                      `Maximum stock limit reached (${remainingStock}).`,
+                    );
+                  }
+                }}
+                className="w-8 h-8 p-0 flex items-center justify-center text-[#8E8E93] hover:text-[#CCFF00] transition-colors disabled:opacity-30 disabled:hover:text-[#8E8E93]"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <Button
+              disabled={isOutOfStock || isMaxStockInCart}
+              className="px-4 flex-1 h-12 rounded-2xl bg-[#CCFF00] text-black font-black uppercase tracking-wider text-sm hover:bg-[#b3e600] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:bg-gray-800 disabled:text-white/40"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="w-5 h-5 mr-2 hidden sm:block" />
+              {isOutOfStock
+                ? "Sold Out"
+                : isMaxStockInCart
+                  ? "Max Added"
+                  : "Add"}
+            </Button>
+          </div>
         </div>
       </div>
     </Link>

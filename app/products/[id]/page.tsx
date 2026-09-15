@@ -34,7 +34,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <span className="px-3 py-1 rounded-full border border-white/10 bg-[#13161C] text-[#8E8E93] text-xs font-bold uppercase tracking-widest">
                 {product.category.title}
               </span>
-              <span className="flex items-center text-[#CCFF00] text-sm font-bold">
+              <a
+                href="#reviews"
+                className="flex items-center text-[#CCFF00] text-base md:text-lg font-bold hover:scale-105 transition-transform cursor-pointer group"
+              >
                 ★{" "}
                 {product.reviews.length
                   ? (
@@ -44,10 +47,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       ) / product.reviews.length
                     ).toFixed(1)
                   : "0.0"}
-                <span className="text-[#8E8E93] ml-1">
-                  ({product.reviews.length})
+                <span className="text-[#8E8E93] ml-2 underline decoration-white/20 underline-offset-4 group-hover:decoration-[#CCFF00] transition-colors">
+                  Read {product.reviews.length} Reviews
                 </span>
-              </span>
+              </a>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase text-white tracking-tight leading-[1.1]">
@@ -68,11 +71,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
           </div>
         </div>
-        <Reviews
-          productId={product.id}
-          productName={product.name}
-          reviews={product.reviews}
-        />
+        <div id="reviews" className="scroll-mt-24">
+          <Reviews
+            productId={product.id}
+            productName={product.name}
+            reviews={product.reviews}
+          />
+        </div>
       </div>
     </main>
   );

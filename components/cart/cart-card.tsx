@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { XIcon, Minus, Plus, Image as ImageIcon } from "lucide-react";
 import { useCartStore } from "@/lib/store";
+import { toast } from "react-toastify";
 
 export default function CartCard({ item }: { item: any }) {
   const { removeFromCart, updateQuantity } = useCartStore();
@@ -53,10 +54,15 @@ export default function CartCard({ item }: { item: any }) {
             </button>
             <span className="text-white font-black">{item.quantity}</span>
             <button
-              onClick={() =>
-                updateQuantity(item.productVariantId, item.quantity + 1)
-              }
-              className="w-8 h-8 flex items-center justify-center text-[#8E8E93] hover:text-[#CCFF00] transition-colors"
+              disabled={item.quantity >= item.stock}
+              onClick={() => {
+                if (item.quantity < item.stock) {
+                  updateQuantity(item.productVariantId, item.quantity + 1);
+                } else {
+                  toast.warning(`Maximum stock limit reached (${item.stock}).`);
+                }
+              }}
+              className="w-8 h-8 flex items-center justify-center text-[#8E8E93] hover:text-[#CCFF00] transition-colors disabled:opacity-30 disabled:hover:text-[#8E8E93]"
             >
               <Plus className="w-4 h-4" />
             </button>
