@@ -155,7 +155,7 @@ export default function ProfilePage() {
                 {session?.user?.email}
               </p>
               <div className="mt-3 inline-block bg-[#CCFF00]/10 text-[#CCFF00] px-3 py-1 text-xs font-black tracking-widest uppercase border border-[#CCFF00]/20">
-                HeavyFuel Member
+                {session?.user?.isAdmin ? "Admin" : " Member"}
               </div>
             </div>
           </div>

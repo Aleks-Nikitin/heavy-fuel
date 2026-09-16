@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Package, LogOut, LogIn, Shield } from "lucide-react";
@@ -9,9 +9,14 @@ import { useSession, signOut } from "@/lib/auth-client";
 export default function UserMenuButton() {
   const { data: session, isPending } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  if (isPending) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (isPending || !mounted) {
     return <div className="w-6 h-6 animate-pulse bg-white/10 rounded-full" />;
   }
 
