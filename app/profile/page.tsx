@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Package,
   Settings,
@@ -10,9 +11,12 @@ import {
   Star,
   Edit3,
   MapPin,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { updateProfile, deleteAccount } from "@/lib/actions/user-actions";
+import { deleteReview } from "@/lib/actions/review-actions";
+import { getReviewsByUser } from "@/lib/actions/review-actions";
 
 const MOCK_ORDERS = [
   {
@@ -29,17 +33,6 @@ const MOCK_ORDERS = [
   },
 ];
 
-const MOCK_REVIEWS = [
-  {
-    id: "rv1",
-    productName: "Oversized Heavyweight Hoodie",
-    rating: 5,
-    title: "Best pump cover",
-    body: "Fits perfectly. The zinc color is super clean.",
-    createdAt: "2026-09-12",
-  },
-];
-
 export default function ProfilePage() {
   const { data: session, isPending, refetch } = useSession();
   const router = useRouter();
@@ -49,13 +42,27 @@ export default function ProfilePage() {
     "orders",
   );
   const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isPending && !session) {
       router.push("/auth");
     }
   }, [session, isPending, router]);
+  const { data: reviews = [], isLoading: isReviewsLoading } = useQuery({
+    queryKey: ["userReviews", session?.user?.id],
+    queryFn: () => getReviewsByUser(),
+    enabled: !!session?.user?.id,
+  });
 
+  const deleteReviewMutation = useMutation({
+    mutationFn: (reviewId: string) => deleteReview(reviewId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["userReviews", session?.user?.id],
+      });
+    },
+  });
   if (isPending || !session) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
@@ -65,7 +72,6 @@ export default function ProfilePage() {
       </div>
     );
   }
-
   const activeName = name ?? session.user.name ?? "";
   const activeEmail = email ?? session.user.email ?? "";
 
@@ -124,6 +130,7 @@ export default function ProfilePage() {
       }
     }
   };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -265,39 +272,54 @@ export default function ProfilePage() {
                   My Reviews
                 </h2>
                 <div className="grid gap-4">
-                  {MOCK_REVIEWS.map((review) => (
-                    <div
-                      key={review.id}
-                      className="border border-zinc-800 bg-zinc-900/30 p-6"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold text-[#CCFF00] uppercase tracking-widest text-sm">
-                          {review.productName}
-                        </h3>
-                        <div className="flex text-[#CCFF00]">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${i < review.rating ? "fill-[#CCFF00]" : "text-zinc-700"}`}
-                            />
-                          ))}
+                  {isReviewsLoading ? (
+                    <div className="text-[#CCFF00] font-bold animate-pulse">
+                      Loading reviews...
+                    </div>
+                  ) : reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="border border-zinc-800 bg-zinc-900/30 p-6"
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-bold text-[#CCFF00] uppercase tracking-widest text-sm">
+                            {review.product.name}
+                          </h3>
+                          <div className="flex text-[#CCFF00]">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${i < review.rating ? "fill-[#CCFF00]" : "text-zinc-700"}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="font-black uppercase tracking-wide text-lg mb-2">
+                          {review.title}
+                        </p>
+                        <p className="text-zinc-400 mb-4">{review.body}</p>
+
+                        <div className="flex gap-3 pt-4 border-t border-zinc-800">
+                          <button
+                            disabled={deleteReviewMutation.isPending}
+                            onClick={() => {
+                              if (window.confirm("Delete this review?")) {
+                                deleteReviewMutation.mutate(review.id);
+                              }
+                            }}
+                            className="text-xs flex gap-2 font-bold uppercase tracking-widest text-zinc-500 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
                         </div>
                       </div>
-                      <p className="font-black uppercase tracking-wide text-lg mb-2">
-                        {review.title}
-                      </p>
-                      <p className="text-zinc-400 mb-4">{review.body}</p>
-
-                      <div className="flex gap-3 pt-4 border-t border-zinc-800">
-                        <button className="text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">
-                          Edit
-                        </button>
-                        <button className="text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-red-500 transition-colors">
-                          Delete
-                        </button>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-[#CCFF00] font-bold text-xl uppercase tracking-widest">
+                      No reviews found.
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             )}
