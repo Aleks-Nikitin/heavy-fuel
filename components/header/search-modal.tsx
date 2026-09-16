@@ -9,17 +9,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  searchProducts,
+  type SearchResult,
+} from "@/lib/actions/search-actions";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-
-type SearchResult = {
-  id: string;
-  slug: string;
-  category: string;
-  name: string;
-  price: number;
-  image: string;
-};
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -41,14 +36,10 @@ export default function SearchModal() {
   const { data: results = [], isLoading } = useQuery<SearchResult[]>({
     queryKey: ["liveSearch", debouncedTerm],
     queryFn: async () => {
-      if (!debouncedTerm) return [];
-
-      /*   const res = await // Hit the server action
-       if (!res.ok) throw new Error("Search failed");
-         return res.json(); */
-      throw new Error("Search function not implemented yet");
+      return await searchProducts(debouncedTerm);
     },
     enabled: debouncedTerm.trim().length > 0,
+    staleTime: 1000 * 60 * 5,
   });
 
   return (
@@ -137,7 +128,7 @@ export default function SearchModal() {
               {results.map((product) => (
                 <Link
                   key={product.id}
-                  href={`/products/${product.category}`}
+                  href={`/products/${product.id}`}
                   onClick={() => setOpen(false)}
                   className="group flex flex-col"
                 >
