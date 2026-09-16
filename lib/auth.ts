@@ -7,20 +7,28 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID! as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET! as string,
     },
   },
-  user:{
+  user: {
+    changeEmail: {
+      enabled: true,
+      updateEmailWithoutVerification: true,
+    },
+    deleteUser: {
+      enabled: true,
+    },
     additionalFields: {
-      isAdmin:{
+      isAdmin: {
         type: "boolean",
         required: false,
         defaultValue: false,
-      }
-    }
       },
+    },
+  },
   plugins: [nextCookies()],
 });

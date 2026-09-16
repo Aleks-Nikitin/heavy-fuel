@@ -1,8 +1,7 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 import {
   Package,
   Settings,
@@ -13,6 +12,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { updateProfile, deleteAccount } from "@/lib/actions/user-actions";
 
 const MOCK_ORDERS = [
   {
@@ -41,8 +41,10 @@ const MOCK_REVIEWS = [
 ];
 
 export default function ProfilePage() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, refetch } = useSession();
   const router = useRouter();
+  const [email, setEmail] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"orders" | "reviews" | "settings">(
     "orders",
   );
@@ -64,17 +66,64 @@ export default function ProfilePage() {
     );
   }
 
+  const activeName = name ?? session.user.name ?? "";
+  const activeEmail = email ?? session.user.email ?? "";
+
   const handleSignOut = async () => {
-    // await signOut();
-    router.push("/auth");
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/auth");
+          router.refresh();
+        },
+      },
+    });
   };
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // await updateProfile(formData);
-    setIsEditing(false);
+    const userId = session?.user?.id;
+    if (!userId) {
+      console.error("User ID is not available.");
+      return;
+    }
+
+    try {
+      await updateProfile(activeName, activeEmail);
+
+      await refetch();
+      setName(null);
+      setEmail(null);
+      setIsEditing(false);
+
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to update profile view:", error);
+    }
   };
 
+  const handleDeleteAccount = async () => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone.",
+    );
+    if (confirmed) {
+      try {
+        await deleteAccount();
+        await signOut({
+          fetchOptions: {
+            onSuccess: () => {
+              router.push("/auth");
+              router.refresh();
+            },
+          },
+        });
+      } catch (err) {
+        console.error("Could not delete account cleanly:", err);
+      }
+    }
+  };
   return (
     <div className="min-h-screen bg-zinc-950 text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -278,7 +327,8 @@ export default function ProfilePage() {
                     <input
                       type="text"
                       disabled={!isEditing}
-                      defaultValue={session?.user?.name || ""}
+                      value={activeName}
+                      onChange={(e) => setName(e.target.value)}
                       className="w-full bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-[#CCFF00] transition-colors disabled:opacity-50"
                     />
                   </div>
@@ -290,7 +340,8 @@ export default function ProfilePage() {
                     <input
                       type="email"
                       disabled={!isEditing}
-                      defaultValue={session?.user?.email || ""}
+                      value={activeEmail}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full bg-zinc-900 border border-zinc-800 p-4 text-white outline-none focus:border-[#CCFF00] transition-colors disabled:opacity-50"
                     />
                   </div>
@@ -326,6 +377,7 @@ export default function ProfilePage() {
                   <Button
                     variant="destructive"
                     className="rounded-none font-black uppercase tracking-widest bg-red-950 text-red-500 border border-red-900 hover:bg-red-900 hover:text-white"
+                    onClick={handleDeleteAccount}
                   >
                     Delete Account
                   </Button>
