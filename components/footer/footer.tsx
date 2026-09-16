@@ -48,7 +48,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 py-12">
           <div className="md:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
             <Link
               href="/"
