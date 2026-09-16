@@ -3,8 +3,9 @@ import Link from "next/link";
 import { CATEGORY_DATA } from "@/lib/project-utils";
 import { useSession } from "@/lib/auth-client";
 import UserMenuButton from "./user-menu-button";
-import { ShoppingCartIcon, User, UserIcon } from "lucide-react";
+import { SearchIcon, ShoppingCartIcon, User, UserIcon } from "lucide-react";
 import CartIcon from "./cart-icon";
+import SearchModal from "./search-modal";
 
 export default function DesktopHeader() {
   const { data: session, isPending } = useSession();
@@ -29,18 +30,8 @@ export default function DesktopHeader() {
           </Link>
         ))}
       </div>
-      <div className="">
-        <input
-          type="text"
-          placeholder="Search"
-          className="rounded-md border border-white/15 bg-white/5 px-4 py-2 text-white placeholder:text-white/50 focus:border-[#CCFF00] focus:outline-none focus:ring-1 focus:ring-[#CCFF00]"
-        />
-      </div>
       <div className="flex items-center gap-8 font-semibold tracking-wider text-white">
-        {/* <Link href={session?.user ? "/profile" : "/auth"}>
-          <UserIcon className="text-white transition-colors hover:text-[#CCFF00]" />
-          
-        </Link> */}
+        <SearchModal></SearchModal>
         <UserMenuButton />
         <CartIcon mobile={false} />
       </div>

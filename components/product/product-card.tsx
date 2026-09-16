@@ -58,7 +58,6 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
     e.preventDefault();
     e.stopPropagation();
 
-    // Trying to add just 1, so we check if at least 1 is remaining
     if (1 > remainingStock) {
       if (isMaxStockInCart) {
         toast.error(

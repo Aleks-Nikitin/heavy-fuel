@@ -1,7 +1,7 @@
 "use client";
 import { useSession } from "@/lib/auth-client";
+import SearchModal from "./search-modal";
 import Link from "next/link";
-import { MenuIcon, ShoppingCartIcon, UserIcon, SearchIcon } from "lucide-react";
 import Menu from "./menu";
 import UserMenuButton from "./user-menu-button";
 import CartIcon from "./cart-icon";
@@ -19,7 +19,7 @@ export default function MobileHeader() {
       </div>
       <div className="flex items-center gap-8">
         <UserMenuButton />
-        <SearchIcon className="text-white" />
+        <SearchModal></SearchModal>
         <CartIcon mobile={true} />
         <Menu />
       </div>
