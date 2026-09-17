@@ -22,8 +22,12 @@ export default function OrdersPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isPending && !session) {
-      router.push("/auth");
+    if (!isPending) {
+      if (!session) {
+        router.push("/auth");
+      } else if (!session.user.isAdmin) {
+        router.push("/");
+      }
     }
   }, [session, isPending, router]);
 
@@ -73,7 +77,7 @@ export default function OrdersPage() {
     <main className="min-h-screen bg-[#0B0D10] py-12 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl md:text-5xl font-black uppercase text-white tracking-tight mb-8">
-          Order History
+          Order Management
         </h1>
 
         <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#13161C]">

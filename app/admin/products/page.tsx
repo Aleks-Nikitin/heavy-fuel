@@ -69,7 +69,7 @@ export default function AdminProductsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <h1 className="text-3xl md:text-5xl font-black uppercase text-white tracking-tight">
-            Inventory <span className="text-[#CCFF00]">Control</span>
+            Product Management
           </h1>
           <button className="flex items-center justify-center gap-2 px-6 py-3 bg-[#CCFF00] text-black rounded-xl font-black uppercase tracking-wider hover:bg-[#b3e600] transition-colors">
             <Plus size={20} />

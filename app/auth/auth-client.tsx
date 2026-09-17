@@ -167,14 +167,14 @@ export default function AuthClientPage() {
               <label className="block text-xs font-bold uppercase tracking-wider text-[#8E8E93]">
                 Password
               </label>
-              {isSignIn && (
+              {/* {isSignIn && (
                 <Link
                   href="/forgot-password"
                   className="text-xs text-[#8E8E93] hover:text-[#CCFF00] transition-colors"
                 >
                   Forgot?
                 </Link>
-              )}
+              )} */}
             </div>
             <div className="relative flex items-center">
               <Lock className="w-5 h-5 absolute left-4 text-[#8E8E93]" />
