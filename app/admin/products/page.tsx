@@ -71,10 +71,6 @@ export default function AdminProductsPage() {
           <h1 className="text-3xl md:text-5xl font-black uppercase text-white tracking-tight">
             Product Management
           </h1>
-          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-[#CCFF00] text-black rounded-xl font-black uppercase tracking-wider hover:bg-[#b3e600] transition-colors">
-            <Plus size={20} />
-            Add Product
-          </button>
         </div>
 
         <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#13161C]">

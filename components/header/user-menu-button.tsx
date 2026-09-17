@@ -69,15 +69,6 @@ export default function UserMenuButton() {
             Profile
           </Link>
 
-          <Link
-            href="/orders"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/5 hover:text-[#CCFF00] transition-colors"
-          >
-            <Package size={16} />
-            Orders
-          </Link>
-
           <button
             onClick={async () => {
               setIsOpen(false);

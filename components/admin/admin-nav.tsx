@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Package, ShoppingBag, ShieldCheck } from "lucide-react";
+import { Package, ShoppingBag, PackagePlus } from "lucide-react";
 
 const navItems = [
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Add Product", href: "/admin/new-product", icon: PackagePlus },
 ];
 
 export function AdminNav() {
