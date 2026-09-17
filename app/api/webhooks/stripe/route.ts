@@ -32,18 +32,39 @@ export async function POST(req: Request) {
 
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
+    const shipping = paymentIntent.shipping;
+    const orderId = paymentIntent.metadata.orderId;
+
+    if (!orderId) {
+      console.error("Webhook Error: No orderId in metadata");
+      return NextResponse.json(
+        { error: "Missing orderId in metadata" },
+        { status: 400 },
+      );
+    }
 
     try {
       await prisma.order.update({
         where: {
-          stripeIntentId: paymentIntent.id,
+          id: orderId,
         },
         data: {
           status: "PROCESSING",
+          stripeIntentId: paymentIntent.id,
+
+          shippingName: shipping?.name ?? null,
+          addressLine1: shipping?.address?.line1 ?? null,
+          addressLine2: shipping?.address?.line2 ?? null,
+          city: shipping?.address?.city ?? null,
+          state: shipping?.address?.state ?? null,
+          zipCode: shipping?.address?.postal_code ?? null,
+          country: shipping?.address?.country ?? null,
         },
       });
 
-      console.log(`Order updated successfully for intent: ${paymentIntent.id}`);
+      console.log(
+        `Order ${orderId} updated successfully for intent: ${paymentIntent.id}`,
+      );
     } catch (error) {
       console.error("Failed to update order status in database", error);
       return NextResponse.json(

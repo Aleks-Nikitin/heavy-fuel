@@ -10,6 +10,25 @@ type CartItemInput = {
   variantId?: string;
   quantity: number;
 };
+function formatOrder(order: any) {
+  return {
+    ...order,
+    totalAmount: order.totalAmount.toNumber(),
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+    items: order.items.map((item: any) => ({
+      ...item,
+      priceAtPurchase: item.priceAtPurchase.toNumber(),
+      variant: {
+        ...item.variant,
+        price: item.variant.price.toNumber(),
+        product: {
+          ...item.variant.product,
+        },
+      },
+    })),
+  };
+}
 
 export async function createOrder(cartItems: CartItemInput[]) {
   try {
@@ -85,17 +104,18 @@ export async function createOrder(cartItems: CartItemInput[]) {
   }
 }
 
-export async function getAllOrders() {
+export async function getUserOrders() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
   if (!session?.user?.id) {
     throw new Error("User not authenticated");
   }
 
   try {
     const rawOrders = await prisma.order.findMany({
-      where: session.user.isAdmin ? undefined : { userId: session.user.id },
+      where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
       include: {
         items: {
@@ -110,26 +130,42 @@ export async function getAllOrders() {
       },
     });
 
-    return rawOrders.map((order) => ({
-      ...order,
-      totalAmount: order.totalAmount.toNumber(),
-      createdAt: order.createdAt.toISOString(),
-      updatedAt: order.updatedAt.toISOString(),
-      items: order.items.map((item) => ({
-        ...item,
-        priceAtPurchase: item.priceAtPurchase.toNumber(),
-        variant: {
-          ...item.variant,
-          price: item.variant.price.toNumber(),
-          product: {
-            ...item.variant.product,
+    return rawOrders.map(formatOrder);
+  } catch (error) {
+    console.error("Error fetching user orders:", error);
+    throw new Error("Failed to fetch user orders");
+  }
+}
+
+export async function getAdminOrders() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user?.id || !session.user.isAdmin) {
+    throw new Error("Unauthorized: Admin access required");
+  }
+
+  try {
+    const rawOrders = await prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+              },
+            },
           },
         },
-      })),
-    }));
+      },
+    });
+
+    return rawOrders.map(formatOrder);
   } catch (error) {
-    console.error("Error fetching orders:", error);
-    throw new Error("Failed to fetch orders");
+    console.error("Error fetching admin orders:", error);
+    throw new Error("Failed to fetch admin orders");
   }
 }
 

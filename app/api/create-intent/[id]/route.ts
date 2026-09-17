@@ -18,6 +18,20 @@ export async function POST(
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
+    if (order.stripeIntentId) {
+      const existingIntent = await stripe.paymentIntents.retrieve(
+        order.stripeIntentId,
+      );
+
+      if (
+        existingIntent.status !== "succeeded" &&
+        existingIntent.status !== "canceled"
+      ) {
+        return NextResponse.json({
+          clientSecret: existingIntent.client_secret,
+        });
+      }
+    }
     const amountInCents = Math.round(Number(order.totalAmount) * 100);
 
     const paymentIntent = await stripe.paymentIntents.create({
