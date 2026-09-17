@@ -1,7 +1,13 @@
 "use client";
-
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { createProduct, getCategories } from "@/lib/actions/product-actions";
+import {
+  createProductSchema,
+  type CreateProductInput,
+} from "@/lib/validations/product";
 import React, { useEffect, useState } from "react";
-import { X, Upload } from "lucide-react";
+import { X, Upload, Loader2 } from "lucide-react";
 
 type VariantMatrixItem = {
   id: string;
@@ -25,7 +31,36 @@ export default function NewProductPage() {
   const [sizes, setSizes] = useState<string[]>([]);
 
   const [variants, setVariants] = useState<VariantMatrixItem[]>([]);
+  const createProductMutation = useMutation({
+    mutationFn: (data: CreateProductInput) => createProduct(data),
+    onSuccess: () => {
+      toast.success("Product created!");
+      setName("");
+      setDescription("");
+      setCategoryId("");
+      setImageUrl("");
+      setCurrentFlavor("");
+      setFlavors([]);
+      setCurrentSize("");
+      setSizes([]);
+      setVariants([]);
+    },
 
+    onError: (error) => {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : "Product creation failed",
+      );
+    },
+  });
+  const {
+    isLoading,
+    error,
+    data: categories,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => await getCategories(),
+  });
   useEffect(() => {
     const newVariants: VariantMatrixItem[] = [];
 
@@ -107,38 +142,34 @@ export default function NewProductPage() {
     console.log("Trigger Cloudinary Upload Widget");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
+    const result = createProductSchema.safeParse({
       name,
       description,
       categoryId,
       image: imageUrl,
       variants,
-    };
+    });
 
-    console.log("Submitting:", payload);
+    if (!result.success) {
+      toast.error(result.error.issues[0]?.message ?? "Invalid product data");
+      return;
+    }
+
+    createProductMutation.mutate(result.data);
   };
 
-  const inputStyles =
-    "w-full rounded-xl border border-white/10 bg-white/[0.04] " +
-    "px-3 text-sm text-white placeholder:text-white/30 " +
-    "outline-none transition-all " +
-    "hover:border-white/20 " +
-    "focus:border-[#CCFF00]/70 focus:ring-2 focus:ring-[#CCFF00]/10";
-
-  const labelStyles = "block text-sm font-medium text-white/80";
-
   return (
-    <main className="min-h-screen bg-[#090909] text-white">
+    <main className="admin-page">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Create New Product
           </h1>
 
-          <p className="mt-2 text-sm text-white/50">
+          <p className="mt-2 text-sm admin-muted">
             Add a new product, configure variants, and set pricing.
           </p>
         </div>
@@ -146,71 +177,73 @@ export default function NewProductPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div className="space-y-6 md:col-span-2">
-              <section className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.035] p-5 shadow-xl shadow-black/10 sm:p-6">
+              <section className="space-y-5 admin-card">
                 <div>
-                  <h2 className="text-lg font-semibold">General Information</h2>
+                  <h2 className="admin-card-title">General Information</h2>
 
-                  <p className="mt-1 text-xs text-white/40">
+                  <p className="admin-card-description">
                     Basic information displayed on the product page.
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelStyles}>Product Name</label>
+                  <label className="admin-label">Product Name</label>
 
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g., 100% Gold Standard Whey"
-                    className={`${inputStyles} h-11`}
+                    className="admin-input h-12"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelStyles}>Description</label>
+                  <label className="admin-label">Description</label>
 
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={5}
                     placeholder="Describe the product..."
-                    className={`${inputStyles} resize-none py-3`}
+                    className="admin-textarea"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <label className={labelStyles}>Category</label>
-
+                  <label className="admin-label">Category</label>
                   <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
-                    className={`${inputStyles} h-11 appearance-none`}
+                    className="admin-select h-12"
                   >
-                    <option value="" className="bg-[#151515]">
+                    <option value="" disabled className="bg-[#0B0D10]">
                       Select a category...
                     </option>
-
-                    <option value="cat_1" className="bg-[#151515]">
-                      Protein Powders
-                    </option>
-
-                    <option value="cat_2" className="bg-[#151515]">
-                      Pre-Workouts
-                    </option>
+                    {isLoading ? (
+                      <option disabled>Loading categories...</option>
+                    ) : (
+                      categories?.map((category) => (
+                        <option
+                          key={category.id}
+                          value={category.id}
+                          className="bg-[#0B0D10]"
+                        >
+                          {category.title}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </section>
-              <section className="space-y-6 rounded-2xl border border-white/10 bg-white/[0.035] p-5 shadow-xl shadow-black/10 sm:p-6">
+              <section className="space-y-6 admin-card">
                 <div>
-                  <h2 className="text-lg font-semibold">Product Options</h2>
-
-                  <p className="mt-1 text-xs text-white/40">
-                    Create the available flavors and sizes.
+                  <h2 className="admin-card-title">Product Options</h2>
+                  <p className="admin-card-description">
+                    Create the available variants and sizes.
                   </p>
                 </div>
                 <div className="space-y-3">
-                  <label className={labelStyles}>Flavors</label>
+                  <label className="admin-label">Variants</label>
 
                   <div className="flex gap-2">
                     <input
@@ -223,19 +256,13 @@ export default function NewProductPage() {
                         }
                       }}
                       placeholder="e.g., Double Rich Chocolate"
-                      className={`${inputStyles} h-11`}
+                      className="admin-input h-12"
                     />
 
                     <button
                       type="button"
                       onClick={handleAddFlavor}
-                      className="
-                        h-11 shrink-0 rounded-xl
-                        bg-[#CCFF00] px-5
-                        text-sm font-bold text-black
-                        transition-colors
-                        hover:bg-[#b3e600]
-                      "
+                      className="admin-primary-button h-12 shrink-0 px-5 "
                     >
                       Add
                     </button>
@@ -247,11 +274,7 @@ export default function NewProductPage() {
                         <span
                           key={flavor}
                           className="
-                            inline-flex items-center gap-2
-                            rounded-full border border-[#CCFF00]/20
-                            bg-[#CCFF00]/10
-                            px-3 py-1.5
-                            text-sm font-medium text-[#CCFF00]
+                           admin-tag
                           "
                         >
                           {flavor}
@@ -259,15 +282,10 @@ export default function NewProductPage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveFlavor(flavor)}
-                            className="
-                              rounded-full p-0.5
-                              text-[#CCFF00]/70
-                              transition-colors
-                              hover:bg-white/10 hover:text-white
-                            "
+                            className="flex h-5 w-5 items-center justify-center rounded-full text-[#CCFF00]/70 transition-colors hover:bg-[#CCFF00]/15 hover:text-[#CCFF00]"
                             aria-label={`Remove ${flavor}`}
                           >
-                            <X size={14} />
+                            <X size={13} />
                           </button>
                         </span>
                       ))}
@@ -275,8 +293,7 @@ export default function NewProductPage() {
                   )}
                 </div>
                 <div className="space-y-3 border-t border-white/10 pt-6">
-                  <label className={labelStyles}>Sizes</label>
-
+                  <label className="admin-label">Sizes</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -288,19 +305,13 @@ export default function NewProductPage() {
                         }
                       }}
                       placeholder="e.g., 2 lbs, 5 lbs, XL"
-                      className={`${inputStyles} h-11`}
+                      className="admin-input h-12"
                     />
 
                     <button
                       type="button"
                       onClick={handleAddSize}
-                      className="
-                        h-11 shrink-0 rounded-xl
-                        bg-[#CCFF00] px-5
-                        text-sm font-bold text-black
-                        transition-colors
-                        hover:bg-[#b3e600]
-                      "
+                      className="admin-primary-button h-12 shrink-0 px-5"
                     >
                       Add
                     </button>
@@ -312,11 +323,7 @@ export default function NewProductPage() {
                         <span
                           key={size}
                           className="
-                            inline-flex items-center gap-2
-                            rounded-full border border-[#CCFF00]/20
-                            bg-[#CCFF00]/10
-                            px-3 py-1.5
-                            text-sm font-medium text-[#CCFF00]
+                           admin-tag
                           "
                         >
                           {size}
@@ -324,15 +331,10 @@ export default function NewProductPage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveSize(size)}
-                            className="
-                              rounded-full p-0.5
-                              text-[#CCFF00]/70
-                              transition-colors
-                              hover:bg-white/10 hover:text-white
-                            "
+                            className="flex h-5 w-5 items-center justify-center rounded-full text-[#CCFF00]/70 transition-colors hover:bg-[#CCFF00]/15 hover:text-[#CCFF00]"
                             aria-label={`Remove ${size}`}
                           >
-                            <X size={14} />
+                            <X size={13} />
                           </button>
                         </span>
                       ))}
@@ -343,11 +345,10 @@ export default function NewProductPage() {
             </div>
 
             <div className="space-y-6">
-              <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.035] p-5 shadow-xl shadow-black/10 sm:p-6">
+              <section className="space-y-4 admin-card">
                 <div>
-                  <h2 className="text-lg font-semibold">Product Image</h2>
-
-                  <p className="mt-1 text-xs text-white/40">
+                  <h2 className="admin-card-title">Product Image</h2>
+                  <p className="admin-card-description">
                     Upload the primary product image.
                   </p>
                 </div>
@@ -360,11 +361,9 @@ export default function NewProductPage() {
                     flex-col items-center justify-center
                     overflow-hidden rounded-xl
                     border-2 border-dashed border-white/10
-                    bg-white/[0.02] p-6
-                    text-center
-                    transition-all
+                    bg-[#0B0D10] p-6
+                    text-center transition-all
                     hover:border-[#CCFF00]/50
-                    hover:bg-[#CCFF00]/[0.03]
                   "
                 >
                   {imageUrl ? (
@@ -378,22 +377,17 @@ export default function NewProductPage() {
                     <>
                       <div
                         className="
-                          mb-4 flex h-12 w-12
-                          items-center justify-center
-                          rounded-full
-                          border border-white/10
-                          bg-white/[0.06]
-                          transition-all
-                          group-hover:border-[#CCFF00]/30
-                          group-hover:bg-[#CCFF00]/10
+                        mb-4 flex h-12 w-12
+                        items-center justify-center
+                        rounded-full border border-white/10
+                        bg-[#181c24]
+                        transition-colors
+                        group-hover:border-[#CCFF00]/30
                         "
                       >
                         <Upload
                           size={22}
-                          className="
-                            text-white/50 transition-colors
-                            group-hover:text-[#CCFF00]
-                          "
+                          className="text-[#8E8E93] transition-colors group-hover:text-[#CCFF00]"
                         />
                       </div>
 
@@ -412,7 +406,7 @@ export default function NewProductPage() {
           </div>
 
           {variants.length > 0 && (
-            <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] shadow-xl shadow-black/10">
+            <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#13161C] shadow-2xl">
               <div className="p-5 sm:p-6">
                 <h2 className="text-lg font-semibold">Pricing & Inventory</h2>
 
@@ -424,7 +418,7 @@ export default function NewProductPage() {
 
               <div className="overflow-x-auto border-t border-white/10">
                 <table className="w-full min-w-[650px] text-left text-sm">
-                  <thead className="bg-white/[0.035] text-xs uppercase tracking-wide text-white/40">
+                  <thead className="admin-table-header">
                     <tr>
                       {flavors.length > 0 && (
                         <th className="px-5 py-3.5 font-medium">Flavor</th>
@@ -444,13 +438,7 @@ export default function NewProductPage() {
 
                   <tbody className="divide-y divide-white/10">
                     {variants.map((variant) => (
-                      <tr
-                        key={variant.id}
-                        className="
-                          transition-colors
-                          hover:bg-white/[0.025]
-                        "
-                      >
+                      <tr key={variant.id} className="admin-table-row border-t">
                         {flavors.length > 0 && (
                           <td className="px-5 py-4 font-medium text-white">
                             {variant.flavor}
@@ -477,7 +465,7 @@ export default function NewProductPage() {
                                 e.target.value,
                               )
                             }
-                            className={`${inputStyles} h-10 w-28`}
+                            className="admin-input h-10 w-28"
                           />
                         </td>
 
@@ -494,7 +482,7 @@ export default function NewProductPage() {
                                 e.target.value,
                               )
                             }
-                            className={`${inputStyles} h-10 w-24`}
+                            className="admin-input h-10 w-28"
                           />
                         </td>
 
@@ -510,7 +498,7 @@ export default function NewProductPage() {
                                 e.target.value,
                               )
                             }
-                            className={`${inputStyles} h-10 min-w-36`}
+                            className="admin-input h-10 min-w-36"
                           />
                         </td>
                       </tr>
@@ -524,19 +512,17 @@ export default function NewProductPage() {
           <div className="flex justify-end border-t border-white/10 pt-6">
             <button
               type="submit"
-              className="
-                rounded-xl
-                bg-[#CCFF00]
-                px-8 py-3
-                text-sm font-bold text-black
-                shadow-lg shadow-[#CCFF00]/5
-                transition-all
-                hover:bg-[#b3e600]
-                hover:shadow-[#CCFF00]/10
-                active:scale-[0.98]
-              "
+              disabled={createProductMutation.isPending}
+              className="admin-primary-button flex min-w-44 items-center justify-center gap-2 px-8 py-3"
             >
-              Save Product
+              {createProductMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Save Product"
+              )}
             </button>
           </div>
         </form>

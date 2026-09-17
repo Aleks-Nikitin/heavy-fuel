@@ -2,7 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import type { ProductDisplay } from "@/lib/product-types";
+import {
+  createProductSchema,
+  type CreateProductInput,
+} from "@/lib/validations/product";
+
 import { revalidatePath } from "next/cache";
+
 function toProductDisplay(product: {
   id: string;
   name: string;
@@ -147,5 +153,59 @@ export async function deleteProduct(id: string) {
   } catch (error) {
     console.error("Error deleting product:", error);
     throw new Error("Failed to delete product");
+  }
+}
+
+export async function createProduct(input: CreateProductInput) {
+  const result = createProductSchema.safeParse(input);
+
+  if (!result.success) {
+    throw new Error(result.error.issues[0]?.message ?? "Invalid product data");
+  }
+  const data = result.data;
+  try {
+    const product = await prisma.product.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        categoryId: data.categoryId,
+        variants: {
+          create: data.variants.map((variant) => ({
+            variant: variant.flavor,
+            size: variant.size,
+            price: Number(variant.price),
+            stock: Number(variant.stock),
+            sku: variant.sku || null,
+          })),
+        },
+      },
+      include: {
+        category: true,
+        variants: true,
+      },
+    });
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath("/shop");
+    return {
+      success: true,
+      productId: product.id,
+    };
+  } catch (error) {
+    console.error("Error creating product:", error);
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to create product");
+  }
+}
+export async function getCategories() {
+  try {
+    const categories = await prisma.category.findMany();
+    return categories;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw new Error("Failed to fetch categories");
   }
 }

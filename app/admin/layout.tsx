@@ -15,7 +15,7 @@ export default function AdminLayout({
               <ShieldAlert className="w-3 h-3" />
               Admin Portal
             </div>
-            <h1 className="text-3xl font-black tracking-tight uppercase italic drop-shadow-sm">
+            <h1 className="text-3xl font-black tracking-tight uppercase drop-shadow-sm">
               Inventory Management
             </h1>
           </div>

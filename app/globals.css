@@ -105,6 +105,86 @@
     color: hsl(var(--foreground));
     min-height: 100vh;
   }
+  .admin-page {
+    @apply min-h-screen bg-[#0B0D10] text-white;
+  }
+  .admin-card {
+    @apply rounded-2xl border border-white/10 bg-[#13161C] p-5 shadow-2xl sm:p-6;
+  }
+  .admin-card-title {
+    @apply text-lg font-bold text-white;
+  }
+
+  .admin-card-description {
+    @apply mt-1 text-sm text-[#8E8E93];
+  }
+
+  .admin-label {
+    @apply block text-xs font-bold uppercase tracking-wider text-[#8E8E93];
+  }
+
+  .admin-input {
+    @apply w-full rounded-xl border border-white/10
+      bg-[#0B0D10] px-4 text-sm text-white
+      placeholder:text-white/20
+      outline-none transition-colors
+      hover:border-white/20
+      focus:border-[#CCFF00];
+  }
+
+  .admin-textarea {
+    @apply w-full resize-none rounded-xl border border-white/10
+      bg-[#0B0D10] px-4 py-3 text-sm text-white
+      placeholder:text-white/20
+      outline-none transition-colors
+      hover:border-white/20
+      focus:border-[#CCFF00];
+  }
+
+  .admin-select {
+    @apply w-full appearance-none rounded-xl border border-white/10
+      bg-[#0B0D10] px-4 text-sm text-white
+      outline-none transition-colors
+      hover:border-white/20
+      focus:border-[#CCFF00];
+  }
+
+  .admin-primary-button {
+    @apply rounded-xl bg-[#CCFF00] font-bold text-black
+      transition-all
+      hover:bg-[#b3e600]
+      active:scale-[0.98]
+      disabled:cursor-not-allowed
+      disabled:opacity-50;
+  }
+
+  .admin-secondary-button {
+    @apply rounded-xl border border-white/10 bg-[#0B0D10]
+      font-bold text-white
+      transition-colors
+      hover:bg-[#181c24]
+      hover:border-white/20;
+  }
+  .admin-divider {
+    @apply border-white/10;
+  }
+  .admin-muted {
+    @apply text-[#8E8E93];
+  }
+  .admin-tag {
+    @apply inline-flex items-center gap-2 rounded-full
+      border border-[#CCFF00]/20
+      bg-[#CCFF00]/10
+      px-3 py-1.5
+      text-sm font-medium text-[#CCFF00];
+  }
+  .admin-table-header {
+    @apply bg-[#0B0D10] text-xs font-bold uppercase
+      tracking-wider text-[#8E8E93];
+  }
+  .admin-table-row {
+    @apply border-white/10 transition-colors hover:bg-white/[0.025];
+  }
 }
 
 .dark {
