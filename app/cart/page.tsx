@@ -1,24 +1,45 @@
 "use client";
+
 import CartCard from "@/components/cart/cart-card";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/lib/auth-client";
 import { useCartStore } from "@/lib/store";
 import { ShieldCheck, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { createOrder } from "@/lib/actions/order-actions";
 
 export default function CartPage() {
-  const {
-    products,
-    totalItems,
-    totalPrice,
-    clearCart,
-    updateQuantity,
-    removeFromCart,
-  } = useCartStore();
+  const { data: session, isPending: isSessionPending } = useSession();
+  const router = useRouter();
+  const { products, totalItems, totalPrice, clearCart } = useCartStore();
+
+  const { mutate: handleCheckout, isPending: isCheckoutPending } = useMutation({
+    mutationFn: async () => {
+      if (!session && !isSessionPending) {
+        router.push("/auth");
+        return;
+      }
+      const payload = products.map((item) => ({
+        productVariantId: item.productVariantId,
+        quantity: item.quantity,
+      }));
+
+      return await createOrder(payload);
+    },
+    onSuccess: (orderId) => {
+      if (orderId) router.push(`/pay/${orderId}`);
+    },
+    onError: (error) => {
+      console.error("Error during checkout:", error);
+    },
+  });
 
   return (
     <main className="min-h-screen bg-[#0B0D10] py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl md:text-5xl font-black uppercase text-white tracking-tight mb-8">
-          Your Stack {totalItems.valueOf() > 0 ? `(${totalItems})` : ""}
+          Your Stack {totalItems > 0 ? `(${totalItems})` : ""}
         </h1>
         {products.length > 0 && (
           <button
@@ -37,7 +58,7 @@ export default function CartPage() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col  mt-6 lg:flex-row gap-8 lg:gap-12 items-start">
+          <div className="flex flex-col mt-6 lg:flex-row gap-8 lg:gap-12 items-start">
             <div className="w-full lg:w-2/3 flex flex-col gap-3 sm:gap-4">
               {products.map((item) => (
                 <CartCard key={item.productVariantId} item={item} />
@@ -72,8 +93,14 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <Button className="w-full h-16 rounded-2xl bg-[#CCFF00] text-black font-black uppercase tracking-wider text-lg hover:bg-[#b3e600] transition-all hover:scale-[1.02]">
-                Proceed to Checkout
+              <Button
+                onClick={() => handleCheckout()}
+                disabled={isCheckoutPending || isSessionPending}
+                className="w-full h-16 rounded-2xl bg-[#CCFF00] text-black font-black uppercase tracking-wider text-lg hover:bg-[#b3e600] transition-all hover:scale-[1.02]"
+              >
+                {isCheckoutPending
+                  ? "Generating Order..."
+                  : "Proceed to Checkout"}
               </Button>
 
               <div className="mt-6 flex items-center justify-center gap-2 text-xs text-[#8E8E93] uppercase tracking-widest">

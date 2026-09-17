@@ -20,10 +20,10 @@ export type CartItemType = {
   productId: string;
   name: string;
   stock: number;
-  variantName: string;
+  variant: string;
   size: string;
   image: string;
-  priceAtPurchase: number;
+  price: number;
   quantity: number;
 };
 export type ActionTypes = {

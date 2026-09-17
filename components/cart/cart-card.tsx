@@ -4,8 +4,8 @@ import Image from "next/image";
 import { XIcon, Minus, Plus, Image as ImageIcon } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { toast } from "react-toastify";
-
-export default function CartCard({ item }: { item: any }) {
+import type { CartItemType } from "@/lib/types";
+export default function CartCard({ item }: { item: CartItemType }) {
   const { removeFromCart, updateQuantity } = useCartStore();
   const maxStock = item.stock ?? 99;
 
