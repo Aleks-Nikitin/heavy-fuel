@@ -130,14 +130,14 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
     <article className="group flex h-full min-w-0 flex-col">
       <Link
         href={`/products/${product.id}`}
-        className="relative block aspect-[4/5] sm:aspect-square w-full overflow-hidden rounded-xl sm:rounded-2xl border border-white/[0.08] bg-[#13161C]"
+        className="relative block w-full aspect-square overflow-hidden rounded-xl sm:rounded-2xl border border-white/[0.08] bg-[#13161C]"
       >
         <Image
           src={currentImage}
           alt={`${product.name} ${selectedVariant}`}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-contain p-2 sm:p-4 transition-transform duration-500 group-hover:scale-[1.04]"
+          className="object-contain p-1 sm:p-3 transition-transform duration-500 group-hover:scale-[1.04]"
         />
 
         {isOutOfStock && (

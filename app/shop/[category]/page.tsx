@@ -7,7 +7,6 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
   const PRODUCTS = await getProductsByCategory(category);
-  console.log("CATEGORY PAGE PRODUCTS:", PRODUCTS);
   return (
     <main>
       <ProductGrid title={category} products={PRODUCTS} />
