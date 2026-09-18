@@ -1,10 +1,16 @@
 "use client";
-
-import { useEffect } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Package, Plus, Loader2 } from "lucide-react";
+import {
+  Trash2,
+  Package,
+  Loader2,
+  ChevronDown,
+  ChevronRight,
+  Boxes,
+} from "lucide-react";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import { getAllProducts, deleteProduct } from "@/lib/actions/product-actions";
@@ -13,6 +19,14 @@ export default function AdminProductsPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [expandedProductId, setExpandedProductId] = useState<string | null>(
+    null,
+  );
+  const toggleExpanded = (productId: string) => {
+    setExpandedProductId((current) =>
+      current === productId ? null : productId,
+    );
+  };
   useEffect(() => {
     if (!isPending) {
       if (!session) {
@@ -109,84 +123,274 @@ export default function AdminProductsPage() {
                       0,
                     ) || 0;
 
+                  const isExpanded = expandedProductId === product.id;
+
+                  const uniqueVariants = [
+                    ...new Set(
+                      product.variants.map((variant: any) => variant.variant),
+                    ),
+                  ];
+
+                  const uniqueSizes = [
+                    ...new Set(
+                      product.variants.map((variant: any) => variant.size),
+                    ),
+                  ];
+
                   return (
-                    <tr
-                      key={product.id}
-                      className="border-b border-white/5 hover:bg-[#181c24] transition-colors"
-                    >
-                      <td className="py-4 px-6">
-                        <div className="w-16 h-16 bg-[#0B0D10] rounded-lg border border-white/5 overflow-hidden flex items-center justify-center relative">
-                          {product.image ? (
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              className="object-contain p-1"
-                            />
-                          ) : (
-                            <Package className="w-6 h-6 text-white/20" />
-                          )}
-                        </div>
-                      </td>
+                    <Fragment key={product.id}>
+                      <tr
+                        onClick={() => toggleExpanded(product.id)}
+                        className="border-b border-white/5 hover:bg-[#181c24] transition-colors cursor-pointer"
+                      >
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              className="text-[#8E8E93] hover:text-[#CCFF00] transition-colors"
+                              aria-label={
+                                isExpanded
+                                  ? `Collapse ${product.name}`
+                                  : `Expand ${product.name}`
+                              }
+                            >
+                              {isExpanded ? (
+                                <ChevronDown size={18} />
+                              ) : (
+                                <ChevronRight size={18} />
+                              )}
+                            </button>
 
-                      <td className="py-4 px-4">
-                        <p className="text-white font-bold uppercase tracking-wide">
-                          {product.name}
-                        </p>
-                        <p className="text-[#8E8E93] text-xs font-semibold uppercase tracking-wider mt-1">
-                          {product.category?.title || "Uncategorized"}
-                        </p>
-                      </td>
+                            <div className="w-16 h-16 bg-[#0B0D10] rounded-lg border border-white/5 overflow-hidden flex items-center justify-center relative shrink-0">
+                              {product.image ? (
+                                <Image
+                                  src={product.image}
+                                  alt={product.name}
+                                  fill
+                                  className="object-contain p-1"
+                                />
+                              ) : (
+                                <Package className="w-6 h-6 text-white/20" />
+                              )}
+                            </div>
+                          </div>
+                        </td>
 
-                      <td className="py-4 px-4 text-center max-w-[200px]">
-                        <div className="flex flex-wrap justify-center gap-1.5">
-                          {product.variants?.length ? (
-                            product.variants.map((v: any) => (
-                              <span
-                                key={v.id}
-                                className="inline-flex items-center bg-white/5 border border-white/10 rounded overflow-hidden text-[10px] uppercase font-bold tracking-wider"
-                              >
-                                <span className="px-1.5 py-1 text-[#8E8E93] border-r border-white/10">
-                                  {v.size}
-                                </span>
-                                <span className="px-1.5 py-1 text-white">
-                                  {v.variant}
-                                </span>
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-xs text-[#8E8E93]">
-                              No variants
+                        <td className="py-4 px-4">
+                          <p className="text-white font-bold uppercase tracking-wide">
+                            {product.name}
+                          </p>
+
+                          <p className="text-[#8E8E93] text-xs font-semibold uppercase tracking-wider mt-1">
+                            {product.category?.title || "Uncategorized"}
+                          </p>
+                        </td>
+
+                        <td className="py-4 px-4 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-white font-bold">
+                              {uniqueVariants.length}
                             </span>
-                          )}
-                        </div>
-                      </td>
 
-                      <td className="py-4 px-4 text-center">
-                        <span
-                          className={`font-black text-lg ${
-                            totalStock === 0
-                              ? "text-red-500"
-                              : totalStock < 10
-                                ? "text-yellow-500"
-                                : "text-[#CCFF00]"
-                          }`}
-                        >
-                          {totalStock}
-                        </span>
-                      </td>
+                            <span className="text-[#8E8E93] text-[10px] uppercase tracking-wider">
+                              {uniqueVariants.length === 1
+                                ? "Variant"
+                                : "Variants"}
+                            </span>
+                          </div>
+                        </td>
 
-                      <td className="py-4 px-6 text-right">
-                        <button
-                          onClick={() => handleDelete(product.id, product.name)}
-                          disabled={deleteMutation.isPending}
-                          className="p-3 text-[#8E8E93] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all disabled:opacity-50"
-                          title="Delete Product"
+                        <td className="py-4 px-4 text-center">
+                          <span
+                            className={`font-black text-lg ${
+                              totalStock === 0
+                                ? "text-red-500"
+                                : totalStock < 10
+                                  ? "text-yellow-500"
+                                  : "text-[#CCFF00]"
+                            }`}
+                          >
+                            {totalStock}
+                          </span>
+                        </td>
+
+                        <td
+                          className="py-4 px-6 text-right"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Trash2 size={20} />
-                        </button>
-                      </td>
-                    </tr>
+                          <button
+                            onClick={() =>
+                              handleDelete(product.id, product.name)
+                            }
+                            disabled={deleteMutation.isPending}
+                            className="p-3 text-[#8E8E93] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all disabled:opacity-50"
+                            title="Delete Product"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr className="bg-[#0B0D10] border-b border-white/10">
+                          <td colSpan={5} className="p-0">
+                            <div className="p-5 md:p-8 animate-in slide-in-from-top-2 fade-in duration-200">
+                              <div className="flex items-center justify-between gap-4 mb-6">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <Boxes
+                                      size={18}
+                                      className="text-[#CCFF00]"
+                                    />
+
+                                    <h3 className="text-white font-bold uppercase tracking-wider">
+                                      Inventory Breakdown
+                                    </h3>
+                                  </div>
+
+                                  <p className="text-[#8E8E93] text-xs mt-1">
+                                    Stock and pricing for each product
+                                    combination.
+                                  </p>
+                                </div>
+
+                                <div className="hidden sm:flex gap-2">
+                                  <span className="px-3 py-1.5 rounded-lg bg-[#13161C] border border-white/10 text-xs text-[#8E8E93]">
+                                    {uniqueVariants.length} variants
+                                  </span>
+
+                                  <span className="px-3 py-1.5 rounded-lg bg-[#13161C] border border-white/10 text-xs text-[#8E8E93]">
+                                    {uniqueSizes.length} sizes
+                                  </span>
+
+                                  <span className="px-3 py-1.5 rounded-lg bg-[#CCFF00]/10 border border-[#CCFF00]/20 text-xs font-bold text-[#CCFF00]">
+                                    {totalStock} units
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#13161C]">
+                                <table className="w-full min-w-[650px] text-left text-sm">
+                                  <thead className="admin-table-header">
+                                    <tr>
+                                      <th className="px-5 py-3.5 font-medium">
+                                        Image
+                                      </th>
+
+                                      <th className="px-5 py-3.5 font-medium">
+                                        Variant
+                                      </th>
+
+                                      <th className="px-5 py-3.5 font-medium">
+                                        Size
+                                      </th>
+
+                                      <th className="px-5 py-3.5 font-medium">
+                                        Price
+                                      </th>
+
+                                      <th className="px-5 py-3.5 font-medium">
+                                        Stock
+                                      </th>
+
+                                      <th className="px-5 py-3.5 font-medium">
+                                        SKU
+                                      </th>
+                                    </tr>
+                                  </thead>
+
+                                  <tbody className="divide-y divide-white/10">
+                                    {product.variants.map((variant: any) => {
+                                      const variantImage =
+                                        product.variantImages?.find(
+                                          (image: any) =>
+                                            image.variant === variant.variant,
+                                        );
+
+                                      return (
+                                        <tr
+                                          key={variant.id}
+                                          className="admin-table-row"
+                                        >
+                                          <td className="px-5 py-3">
+                                            <div className="relative w-12 h-12 rounded-lg bg-[#0B0D10] border border-white/10 overflow-hidden">
+                                              <Image
+                                                src={
+                                                  variantImage?.image ??
+                                                  product.image
+                                                }
+                                                alt={`${product.name} ${variant.variant}`}
+                                                fill
+                                                className="object-contain p-1"
+                                              />
+                                            </div>
+                                          </td>
+
+                                          <td className="px-5 py-4">
+                                            <span className="font-bold text-white">
+                                              {variant.variant || "Default"}
+                                            </span>
+                                          </td>
+
+                                          <td className="px-5 py-4 text-[#8E8E93]">
+                                            {variant.size || "Default"}
+                                          </td>
+
+                                          <td className="px-5 py-4 font-bold text-white">
+                                            ${Number(variant.price).toFixed(2)}
+                                          </td>
+
+                                          <td className="px-5 py-4">
+                                            <div className="flex items-center gap-2">
+                                              <span
+                                                className={`w-2 h-2 rounded-full ${
+                                                  variant.stock === 0
+                                                    ? "bg-red-500"
+                                                    : variant.stock <= 5
+                                                      ? "bg-yellow-500"
+                                                      : "bg-[#CCFF00]"
+                                                }`}
+                                              />
+
+                                              <span
+                                                className={`font-black ${
+                                                  variant.stock === 0
+                                                    ? "text-red-500"
+                                                    : variant.stock <= 5
+                                                      ? "text-yellow-500"
+                                                      : "text-white"
+                                                }`}
+                                              >
+                                                {variant.stock}
+                                              </span>
+
+                                              <span className="text-[#8E8E93] text-xs">
+                                                units
+                                              </span>
+                                            </div>
+                                          </td>
+
+                                          <td className="px-5 py-4">
+                                            {variant.sku ? (
+                                              <code className="text-xs text-[#8E8E93] bg-[#0B0D10] border border-white/10 rounded-md px-2 py-1">
+                                                {variant.sku}
+                                              </code>
+                                            ) : (
+                                              <span className="text-white/20">
+                                                —
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   );
                 })
               )}
