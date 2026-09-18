@@ -214,14 +214,45 @@ export default function OrdersPage() {
                                       <p className="text-white font-bold uppercase tracking-wider text-sm mb-1">
                                         Shipping Address
                                       </p>
-                                      <p className="text-[#8E8E93] text-sm">
-                                        {session?.user?.name}
-                                        <br />
-                                        {order.shippingAddress}
-                                        <br />
-                                        {order.city}, {order.state}{" "}
-                                        {order.zipCode}
-                                      </p>
+                                      <div className="text-sm text-white">
+                                        <p className="uppercase tracking-wider">
+                                          {order.shippingName ||
+                                            session?.user?.name ||
+                                            "Customer"}
+                                        </p>
+
+                                        {order.addressLine1 && (
+                                          <p className="mt-1 text-[#8E8E93]">
+                                            {order.addressLine1}
+                                          </p>
+                                        )}
+
+                                        {order.addressLine2 && (
+                                          <p className="text-[#8E8E93]">
+                                            {order.addressLine2}
+                                          </p>
+                                        )}
+
+                                        {(order.city ||
+                                          order.state ||
+                                          order.zipCode) && (
+                                          <p className="text-[#8E8E93]">
+                                            {[
+                                              order.city,
+                                              order.state,
+                                              order.zipCode,
+                                            ]
+                                              .filter(Boolean)
+                                              .join(", ")}
+                                          </p>
+                                        )}
+
+                                        {order.country && (
+                                          <p className="text-[#8E8E93]">
+                                            {order.country}
+                                          </p>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
-
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(
@@ -11,12 +12,36 @@ export async function POST(
   try {
     const { id: orderId } = await params;
 
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+
+        { status: 401 },
+      );
+    }
+
     const order = await prisma.order.findUnique({
       where: { id: orderId },
     });
 
     if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Order not found" },
+
+        { status: 404 },
+      );
+    }
+
+    if (order.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+
+        { status: 403 },
+      );
     }
     if (order.stripeIntentId) {
       const existingIntent = await stripe.paymentIntents.retrieve(

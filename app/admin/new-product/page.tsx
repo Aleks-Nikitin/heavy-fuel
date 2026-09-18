@@ -161,8 +161,8 @@ export default function NewProductPage() {
     <main className="admin-page">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Create New Product
+          <h1 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tight">
+            Create new Product
           </h1>
 
           <p className="mt-2 text-sm admin-muted">

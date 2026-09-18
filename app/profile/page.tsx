@@ -370,15 +370,42 @@ export default function ProfilePage() {
                                       <Truck className="w-5 h-5 text-[#8E8E93] mt-0.5" />
                                       <div className="text-sm font-semibold text-white">
                                         <p className="uppercase tracking-wider">
-                                          {session?.user?.name || "Customer"}
+                                          {order.shippingName ||
+                                            session?.user?.name ||
+                                            "Customer"}
                                         </p>
-                                        <p className="text-[#8E8E93] mt-1">
-                                          {order.shippingAddress}
-                                        </p>
-                                        <p className="text-[#8E8E93]">
-                                          {order.city}, {order.state}{" "}
-                                          {order.zipCode}
-                                        </p>
+
+                                        {order.addressLine1 && (
+                                          <p className="mt-1 text-[#8E8E93]">
+                                            {order.addressLine1}
+                                          </p>
+                                        )}
+
+                                        {order.addressLine2 && (
+                                          <p className="text-[#8E8E93]">
+                                            {order.addressLine2}
+                                          </p>
+                                        )}
+
+                                        {(order.city ||
+                                          order.state ||
+                                          order.zipCode) && (
+                                          <p className="text-[#8E8E93]">
+                                            {[
+                                              order.city,
+                                              order.state,
+                                              order.zipCode,
+                                            ]
+                                              .filter(Boolean)
+                                              .join(", ")}
+                                          </p>
+                                        )}
+
+                                        {order.country && (
+                                          <p className="text-[#8E8E93]">
+                                            {order.country}
+                                          </p>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
