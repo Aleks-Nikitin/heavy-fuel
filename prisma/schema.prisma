@@ -22,13 +22,24 @@ model Product {
   name        String
   image       String
   description String
+  imagePublicId String?
   categoryId  String
   createdAt   DateTime         @default(now())
   category    Category         @relation(fields: [categoryId], references: [id])
   variants    ProductVariant[]
+  variantImages ProductVariantImage[]
   reviews     Review[]
 }
+model ProductVariantImage {
+  id            String  @id @default(cuid())
+  variant       String
+  image         String
+  imagePublicId String?
+  productId     String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@unique([productId, variant])
 
+}
 model ProductVariant {
   id        String  @id @default(cuid())
   productId String
@@ -76,7 +87,7 @@ model Order {
   state          String?
   zipCode        String?
   country        String?
-  
+
   items          OrderItem[]
   user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

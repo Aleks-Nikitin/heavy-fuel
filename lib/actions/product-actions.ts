@@ -169,20 +169,30 @@ export async function createProduct(input: CreateProductInput) {
         name: data.name,
         description: data.description,
         image: data.image,
+        imagePublicId: data.imagePublicId,
         categoryId: data.categoryId,
         variants: {
-          create: data.variants.map((variant) => ({
-            variant: variant.flavor,
-            size: variant.size,
-            price: Number(variant.price),
-            stock: Number(variant.stock),
-            sku: variant.sku || null,
+          create: data.variants.map((item) => ({
+            variant: item.flavor,
+            size: item.size,
+            price: Number(item.price),
+            stock: Number(item.stock),
+            sku: item.sku || null,
+          })),
+        },
+
+        variantImages: {
+          create: data.variantImages.map((item) => ({
+            variant: item.variant,
+            image: item.image,
+            imagePublicId: item.imagePublicId,
           })),
         },
       },
       include: {
         category: true,
         variants: true,
+        variantImages: true,
       },
     });
     revalidatePath("/");

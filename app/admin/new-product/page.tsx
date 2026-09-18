@@ -17,12 +17,17 @@ type VariantMatrixItem = {
   stock: string;
   sku: string;
 };
+type VariantImage = {
+  variant: string;
+  image: string;
+  imagePublicId: string;
+};
 
 export default function NewProductPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [variantImages, setVariantImages] = useState<VariantImage[]>([]);
 
   const [currentFlavor, setCurrentFlavor] = useState("");
   const [flavors, setFlavors] = useState<string[]>([]);
@@ -38,7 +43,6 @@ export default function NewProductPage() {
       setName("");
       setDescription("");
       setCategoryId("");
-      setImageUrl("");
       setCurrentFlavor("");
       setFlavors([]);
       setCurrentSize("");
@@ -109,10 +113,13 @@ export default function NewProductPage() {
     }
   };
 
-  const handleRemoveFlavor = (flavorToRemove: string) => {
-    setFlavors(flavors.filter((f) => f !== flavorToRemove));
-  };
+  const handleRemoveFlavor = (variantToRemove: string) => {
+    setFlavors((prev) => prev.filter((variant) => variant !== variantToRemove));
 
+    setVariantImages((prev) =>
+      prev.filter((image) => image.variant !== variantToRemove),
+    );
+  };
   const handleAddSize = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -141,11 +148,20 @@ export default function NewProductPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const firstVariantImage = variantImages[0];
+
+    if (!firstVariantImage) {
+      toast.error("Upload at least one variant image");
+      return;
+    }
+
     const result = createProductSchema.safeParse({
       name,
       description,
       categoryId,
-      image: imageUrl,
+      image: firstVariantImage.image,
+      imagePublicId: firstVariantImage.imagePublicId,
+      variantImages,
       variants,
     });
 
@@ -340,98 +356,110 @@ export default function NewProductPage() {
               </section>
             </div>
 
-            <div className="space-y-6">
-              <section className="space-y-4 admin-card">
-                <div>
-                  <h2 className="admin-card-title">Product Image</h2>
-                  <p className="admin-card-description">
-                    Upload the primary product image.
-                  </p>
-                </div>
+            <div className="space-y-3 border-t border-white/10 pt-6">
+              <label className="admin-label">Variant Images</label>
 
-                <CldUploadWidget
-                  uploadPreset="heavyfuel_products"
-                  options={{
-                    multiple: false,
-                    maxFiles: 1,
-                    resourceType: "image",
-                    clientAllowedFormats: [
-                      "jpg",
-                      "jpeg",
-                      "png",
-                      "webp",
-                      "avif",
-                    ],
-                    maxFileSize: 5_000_000,
-                    folder: "heavyfuel/products",
-                  }}
-                  onSuccess={(result) => {
-                    if (
-                      typeof result.info === "object" &&
-                      "secure_url" in result.info
-                    ) {
-                      setImageUrl(result.info.secure_url);
-                      toast.success("Image uploaded!");
-                    }
-                  }}
-                  onError={() => {
-                    toast.error("Image upload failed");
-                  }}
-                >
-                  {({ open }) => (
-                    <button
-                      type="button"
-                      onClick={() => open()}
-                      className="
-                        group flex min-h-56 w-full
-                        flex-col items-center justify-center
-                        overflow-hidden rounded-xl
-                        border-2 border-dashed border-white/10
-                        bg-[#0B0D10] p-6
-                        text-center transition-all
-                        hover:border-[#CCFF00]/50
-                    "
+              <p className="admin-card-description">
+                Upload one image for each product variant.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {flavors.map((variant) => {
+                  const variantImage = variantImages.find(
+                    (image) => image.variant === variant,
+                  );
+
+                  return (
+                    <div
+                      key={variant}
+                      className="rounded-xl border border-white/10 bg-[#0B0D10] p-3"
                     >
-                      {imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={imageUrl}
-                          alt="Uploaded product"
-                          className="max-h-52 w-full rounded-lg object-contain"
-                        />
-                      ) : (
-                        <>
-                          <div
+                      <p className="mb-3 text-sm font-bold text-white">
+                        {variant}
+                      </p>
+
+                      <CldUploadWidget
+                        uploadPreset="heavyfuel_products"
+                        options={{
+                          multiple: false,
+                          maxFiles: 1,
+                          resourceType: "image",
+                          clientAllowedFormats: [
+                            "jpg",
+                            "jpeg",
+                            "png",
+                            "webp",
+                            "avif",
+                          ],
+                          maxFileSize: 5_000_000,
+                          folder: "heavyfuel/products",
+                        }}
+                        onSuccess={(result) => {
+                          if (
+                            typeof result.info === "object" &&
+                            "secure_url" in result.info &&
+                            "public_id" in result.info
+                          ) {
+                            const image = {
+                              variant,
+                              image: result.info.secure_url,
+                              imagePublicId: result.info.public_id,
+                            };
+
+                            setVariantImages((prev) => [
+                              ...prev.filter(
+                                (item) => item.variant !== variant,
+                              ),
+                              image,
+                            ]);
+
+                            toast.success(`${variant} image uploaded!`);
+                          }
+                        }}
+                        onError={() => {
+                          toast.error(`Failed to upload ${variant} image`);
+                        }}
+                      >
+                        {({ open }) => (
+                          <button
+                            type="button"
+                            onClick={() => open()}
                             className="
-                        mb-4 flex h-12 w-12
-                        items-center justify-center
-                        rounded-full border border-white/10
-                        bg-[#181c24]
-                        transition-colors
-                        group-hover:border-[#CCFF00]/30
-                        "
+                            group flex h-44 w-full
+                            flex-col items-center justify-center
+                            overflow-hidden rounded-xl
+                            border-2 border-dashed border-white/10
+                            bg-[#13161C]
+                            transition-all
+                            hover:border-[#CCFF00]/50
+                "
                           >
-                            <Upload
-                              size={22}
-                              className="
-                                text-[#8E8E93]
-                                transition-colors
-                                group-hover:text-[#CCFF00]
-                            "
-                            />
-                          </div>
-                          <p className="text-sm font-medium text-white/80">
-                            Click to upload image
-                          </p>
-                          <p className="mt-1 text-xs text-[#8E8E93]">
-                            JPG, PNG, WEBP or AVIF · Max 5 MB
-                          </p>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </CldUploadWidget>
-              </section>
+                            {variantImage ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={variantImage.image}
+                                alt={variant}
+                                className="h-full w-full object-contain p-2"
+                              />
+                            ) : (
+                              <>
+                                <Upload
+                                  size={22}
+                                  className="mb-2 text-[#8E8E93] group-hover:text-[#CCFF00]"
+                                />
+
+                                <span className="text-xs text-[#8E8E93]">
+                                  Upload {variant}
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </CldUploadWidget>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

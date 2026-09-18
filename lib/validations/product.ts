@@ -1,5 +1,9 @@
 import { z } from "zod";
-
+export const variantImageSchema = z.object({
+  variant: z.string().trim().min(1),
+  image: z.string().trim().url(),
+  imagePublicId: z.string().trim().min(1),
+});
 export const productVariantSchema = z.object({
   flavor: z.string().trim().min(1, "Variant is required"),
 
@@ -31,21 +35,23 @@ export const createProductSchema = z.object({
     .string()
     .trim()
     .min(2, "Product name must be at least 2 characters")
-    .max(150, "Product name is too long"),
+    .max(150),
 
   description: z
     .string()
     .trim()
     .min(10, "Description must be at least 10 characters")
-    .max(5000, "Description is too long"),
+    .max(5000),
 
   categoryId: z.string().trim().min(1, "Please select a category"),
 
-  image: z
-    .string()
-    .trim()
-    .min(1, "Product image is required")
-    .url("Product image must be a valid URL"),
+  image: z.string().trim().url("Product image must be a valid URL"),
+
+  imagePublicId: z.string().trim().min(1),
+
+  variantImages: z
+    .array(variantImageSchema)
+    .min(1, "Upload at least one variant image"),
 
   variants: z
     .array(productVariantSchema)
