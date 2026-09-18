@@ -10,10 +10,17 @@ import {
   ChevronDown,
   ChevronRight,
   Boxes,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import Image from "next/image";
-import { getAllProducts, deleteProduct } from "@/lib/actions/product-actions";
+import {
+  getAllProducts,
+  deleteProduct,
+  updateProductVariant,
+} from "@/lib/actions/product-actions";
 
 export default function AdminProductsPage() {
   const { data: session, isPending } = useSession();
@@ -22,6 +29,10 @@ export default function AdminProductsPage() {
   const [expandedProductId, setExpandedProductId] = useState<string | null>(
     null,
   );
+  const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
+
+  const [editPrice, setEditPrice] = useState("");
+  const [editStock, setEditStock] = useState("");
   const toggleExpanded = (productId: string) => {
     setExpandedProductId((current) =>
       current === productId ? null : productId,
@@ -59,7 +70,21 @@ export default function AdminProductsPage() {
       );
     },
   });
-
+  const updateVariantMutation = useMutation({
+    mutationFn: updateProductVariant,
+    onSuccess: () => {
+      toast.success("Variant updated");
+      setEditingVariantId(null);
+      queryClient.invalidateQueries({
+        queryKey: ["admin-products"],
+      });
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update variant",
+      );
+    },
+  });
   const handleDelete = (id: string, name: string) => {
     if (
       window.confirm(
@@ -68,6 +93,37 @@ export default function AdminProductsPage() {
     ) {
       deleteMutation.mutate(id);
     }
+  };
+  const handleStartEdit = (variant: any) => {
+    setEditingVariantId(variant.id);
+    setEditPrice(String(variant.price));
+    setEditStock(String(variant.stock));
+  };
+
+  const handleCancelEdit = () => {
+    setEditingVariantId(null);
+    setEditPrice("");
+    setEditStock("");
+  };
+
+  const handleSaveVariant = (variantId: string) => {
+    const price = Number(editPrice);
+    const stock = Number(editStock);
+    if (!Number.isFinite(price) || price <= 0) {
+      toast.error("Price must be greater than 0");
+      return;
+    }
+
+    if (!Number.isInteger(stock) || stock < 0) {
+      toast.error("Stock must be a non-negative whole number");
+      return;
+    }
+
+    updateVariantMutation.mutate({
+      id: variantId,
+      price,
+      stock,
+    });
   };
 
   if (isPending || !session?.user.isAdmin) {
@@ -295,11 +351,16 @@ export default function AdminProductsPage() {
                                       <th className="px-5 py-3.5 font-medium">
                                         SKU
                                       </th>
+                                      <th className="px-5 py-3.5 font-medium text-right">
+                                        Actions
+                                      </th>
                                     </tr>
                                   </thead>
 
                                   <tbody className="divide-y divide-white/10">
                                     {product.variants.map((variant: any) => {
+                                      const isEditing =
+                                        editingVariantId === variant.id;
                                       const variantImage =
                                         product.variantImages?.find(
                                           (image: any) =>
@@ -335,38 +396,72 @@ export default function AdminProductsPage() {
                                             {variant.size || "Default"}
                                           </td>
 
-                                          <td className="px-5 py-4 font-bold text-white">
-                                            ${Number(variant.price).toFixed(2)}
+                                          <td className="px-5 py-4">
+                                            {isEditing ? (
+                                              <div className="relative w-28">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8E93]">
+                                                  $
+                                                </span>
+                                                <input
+                                                  type="number"
+                                                  min="0.01"
+                                                  step="0.01"
+                                                  value={editPrice}
+                                                  onChange={(e) =>
+                                                    setEditPrice(e.target.value)
+                                                  }
+                                                  className="admin-input h-10 w-28 pl-7"
+                                                />
+                                              </div>
+                                            ) : (
+                                              <span className="font-bold text-white">
+                                                ${" "}
+                                                {Number(variant.price).toFixed(
+                                                  2,
+                                                )}
+                                              </span>
+                                            )}
                                           </td>
 
                                           <td className="px-5 py-4">
-                                            <div className="flex items-center gap-2">
-                                              <span
-                                                className={`w-2 h-2 rounded-full ${
-                                                  variant.stock === 0
-                                                    ? "bg-red-500"
-                                                    : variant.stock <= 5
-                                                      ? "bg-yellow-500"
-                                                      : "bg-[#CCFF00]"
-                                                }`}
+                                            {isEditing ? (
+                                              <input
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                value={editStock}
+                                                onChange={(e) =>
+                                                  setEditStock(e.target.value)
+                                                }
+                                                className="admin-input h-10 w-24"
                                               />
-
-                                              <span
-                                                className={`font-black ${
-                                                  variant.stock === 0
-                                                    ? "text-red-500"
-                                                    : variant.stock <= 5
-                                                      ? "text-yellow-500"
-                                                      : "text-white"
-                                                }`}
-                                              >
-                                                {variant.stock}
-                                              </span>
-
-                                              <span className="text-[#8E8E93] text-xs">
-                                                units
-                                              </span>
-                                            </div>
+                                            ) : (
+                                              <div className="flex items-center gap-2">
+                                                <span
+                                                  className={`w-2 h-2 rounded-full ${
+                                                    variant.stock === 0
+                                                      ? "bg-red-500"
+                                                      : variant.stock <= 5
+                                                        ? "bg-yellow-500"
+                                                        : "bg-[#CCFF00]"
+                                                  }`}
+                                                />
+                                                <span
+                                                  className={`font-black ${
+                                                    variant.stock === 0
+                                                      ? "text-red-500"
+                                                      : variant.stock <= 5
+                                                        ? "text-yellow-500"
+                                                        : "text-white"
+                                                  }`}
+                                                >
+                                                  {variant.stock}
+                                                </span>
+                                                <span className="text-[#8E8E93] text-xs">
+                                                  units
+                                                </span>
+                                              </div>
+                                            )}
                                           </td>
 
                                           <td className="px-5 py-4">
@@ -378,6 +473,62 @@ export default function AdminProductsPage() {
                                               <span className="text-white/20">
                                                 —
                                               </span>
+                                            )}
+                                          </td>
+                                          <td className="px-5 py-4 text-right">
+                                            {isEditing ? (
+                                              <div className="flex items-center justify-end gap-1">
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    handleSaveVariant(
+                                                      variant.id,
+                                                    )
+                                                  }
+                                                  disabled={
+                                                    updateVariantMutation.isPending
+                                                  }
+                                                  className="p-2.5 rounded-lg text-[#CCFF00] hover:bg-[#CCFF00]/10 transition-colors disabled:opacity-50"
+                                                  title="Save changes"
+                                                >
+                                                  {updateVariantMutation.isPending ? (
+                                                    <Loader2
+                                                      size={18}
+                                                      className="animate-spin"
+                                                    />
+                                                  ) : (
+                                                    <Check size={18} />
+                                                  )}
+                                                </button>
+
+                                                <button
+                                                  type="button"
+                                                  onClick={handleCancelEdit}
+                                                  disabled={
+                                                    updateVariantMutation.isPending
+                                                  }
+                                                  className="p-2.5 rounded-lg text-[#8E8E93] hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                                                  title="Cancel"
+                                                >
+                                                  <X size={18} />
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                disabled={
+                                                  editingVariantId !== null &&
+                                                  editingVariantId !==
+                                                    variant.id
+                                                }
+                                                onClick={() =>
+                                                  handleStartEdit(variant)
+                                                }
+                                                className="p-2.5 rounded-lg text-[#8E8E93] hover:text-[#CCFF00] hover:bg-[#CCFF00]/10 transition-colors"
+                                                title="Edit price and stock"
+                                              >
+                                                <Pencil size={18} />
+                                              </button>
                                             )}
                                           </td>
                                         </tr>

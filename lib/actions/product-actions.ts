@@ -1,5 +1,6 @@
 "use server";
-
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import type { ProductDisplay } from "@/lib/product-types";
 import {
@@ -160,6 +161,12 @@ export async function getProductById(productId: string) {
   }
 }
 export async function deleteProduct(id: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user?.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   try {
     await prisma.product.delete({
       where: { id },
@@ -175,6 +182,12 @@ export async function deleteProduct(id: string) {
 }
 
 export async function createProduct(input: CreateProductInput) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user?.isAdmin) {
+    throw new Error("Unauthorized");
+  }
   const result = createProductSchema.safeParse(input);
 
   if (!result.success) {
@@ -235,5 +248,53 @@ export async function getCategories() {
   } catch (error) {
     console.error("Error fetching categories:", error);
     throw new Error("Failed to fetch categories");
+  }
+}
+export async function updateProductVariant(input: {
+  id: string;
+  price: number;
+  stock: number;
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user?.isAdmin) {
+    throw new Error("Unauthorized");
+  }
+  if (
+    !input.id ||
+    !Number.isFinite(input.price) ||
+    input.price <= 0 ||
+    !Number.isInteger(input.stock) ||
+    input.stock < 0
+  ) {
+    throw new Error("Invalid variant data");
+  }
+  try {
+    const variant = await prisma.productVariant.update({
+      where: {
+        id: input.id,
+      },
+      data: {
+        price: input.price,
+        stock: input.stock,
+      },
+    });
+
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath("/shop");
+    revalidatePath("/admin/products");
+    return {
+      success: true,
+      variant: {
+        id: variant.id,
+        price: Number(variant.price),
+        stock: variant.stock,
+      },
+    };
+  } catch (error) {
+    console.error("Error updating product variant:", error);
+    throw new Error("Failed to update product variant");
   }
 }
