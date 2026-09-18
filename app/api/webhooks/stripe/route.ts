@@ -32,11 +32,13 @@ export async function POST(req: Request) {
 
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
+
     const shipping = paymentIntent.shipping;
     const orderId = paymentIntent.metadata.orderId;
 
     if (!orderId) {
       console.error("Webhook Error: No orderId in metadata");
+
       return NextResponse.json(
         { error: "Missing orderId in metadata" },
         { status: 400 },
@@ -44,31 +46,71 @@ export async function POST(req: Request) {
     }
 
     try {
-      await prisma.order.update({
-        where: {
-          id: orderId,
-        },
-        data: {
-          status: "PROCESSING",
-          stripeIntentId: paymentIntent.id,
+      await prisma.$transaction(async (tx) => {
+        const order = await tx.order.findUnique({
+          where: {
+            id: orderId,
+          },
+          include: {
+            items: true,
+          },
+        });
 
-          shippingName: shipping?.name ?? null,
-          addressLine1: shipping?.address?.line1 ?? null,
-          addressLine2: shipping?.address?.line2 ?? null,
-          city: shipping?.address?.city ?? null,
-          state: shipping?.address?.state ?? null,
-          zipCode: shipping?.address?.postal_code ?? null,
-          country: shipping?.address?.country ?? null,
-        },
+        if (!order) {
+          throw new Error("Order not found");
+        }
+        if (order.status !== "PENDING") {
+          console.log(`Order ${orderId} already processed. Skipping.`);
+          return;
+        }
+
+        for (const item of order.items) {
+          const result = await tx.productVariant.updateMany({
+            where: {
+              id: item.productVariantId,
+              stock: {
+                gte: item.quantity,
+              },
+            },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+
+          if (result.count === 0) {
+            throw new Error(
+              `Insufficient stock for variant ${item.productVariantId}`,
+            );
+          }
+        }
+        await tx.order.update({
+          where: {
+            id: orderId,
+          },
+          data: {
+            status: "PROCESSING",
+            stripeIntentId: paymentIntent.id,
+
+            shippingName: shipping?.name ?? null,
+            addressLine1: shipping?.address?.line1 ?? null,
+            addressLine2: shipping?.address?.line2 ?? null,
+            city: shipping?.address?.city ?? null,
+            state: shipping?.address?.state ?? null,
+            zipCode: shipping?.address?.postal_code ?? null,
+            country: shipping?.address?.country ?? null,
+          },
+        });
       });
-
       console.log(
-        `Order ${orderId} updated successfully for intent: ${paymentIntent.id}`,
+        `Order ${orderId} successfully processed for ${paymentIntent.id}`,
       );
     } catch (error) {
-      console.error("Failed to update order status in database", error);
+      console.error("Failed to process order:", error);
+
       return NextResponse.json(
-        { error: "Database update failed" },
+        { error: "Failed to process order" },
         { status: 500 },
       );
     }
