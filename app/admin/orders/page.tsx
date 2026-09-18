@@ -16,7 +16,21 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
-
+type OrderItemDisplay = {
+  id: string;
+  quantity: number;
+  priceAtPurchase: number;
+  variant: {
+    id: string;
+    variant: string;
+    size: string;
+    product: {
+      id: string;
+      name: string;
+      image: string;
+    };
+  };
+};
 export default function OrdersPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
@@ -98,7 +112,7 @@ export default function OrdersPage() {
               {data?.map((order) => {
                 const isExpanded = expandedOrderId === order.id;
                 const totalItems = order.items.reduce(
-                  (acc, item) => acc + item.quantity,
+                  (acc: number, item: OrderItemDisplay) => acc + item.quantity,
                   0,
                 );
 
@@ -168,7 +182,7 @@ export default function OrdersPage() {
                                   Order Items
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {order.items.map((item) => (
+                                  {order.items.map((item: OrderItemDisplay) => (
                                     <div
                                       key={item.id}
                                       className="flex items-center gap-4 bg-[#13161C] p-4 rounded-xl border border-white/5 hover:border-white/10 transition-colors"

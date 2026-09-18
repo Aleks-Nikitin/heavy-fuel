@@ -60,7 +60,6 @@ export default function ReviewModal({
         rating,
         title,
         body,
-        userId: session.user.id,
       });
 
       toast.success("Review submitted successfully!");

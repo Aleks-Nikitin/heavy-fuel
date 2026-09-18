@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { OrderStatus } from "@/lib/types";
+import { OrderStatus, OrderItemDisplay } from "@/lib/types";
 import {
   Package,
   Settings,
@@ -20,6 +20,18 @@ import {
   CheckCircle,
   ChevronUp,
 } from "lucide-react";
+export type CartItemType = {
+  id: string;
+  productVariantId: string;
+  name: string;
+  stock: number;
+  variant: string;
+  size: string;
+  image: string;
+  price: number;
+  priceAtPurchase: number;
+  quantity: number;
+};
 import { Button } from "@/components/ui/button";
 import { updateProfile, deleteAccount } from "@/lib/actions/user-actions";
 import { deleteReview } from "@/lib/actions/review-actions";
@@ -254,7 +266,8 @@ export default function ProfilePage() {
                       const isExpanded = expandedOrderId === order.id;
                       const totalItems =
                         order.items?.reduce(
-                          (acc, item) => acc + item.quantity,
+                          (acc: number, item: OrderItemDisplay) =>
+                            acc + item.quantity,
                           0,
                         ) || 0;
 
@@ -327,37 +340,39 @@ export default function ProfilePage() {
                                     Items Included
                                   </h3>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {order.items?.map((item) => (
-                                      <div
-                                        key={item.id}
-                                        className="flex items-center gap-4 bg-[#13161C] p-3 rounded-lg border border-white/5"
-                                      >
-                                        <div className="w-16 h-16 bg-white/5 rounded-md overflow-hidden flex-shrink-0">
-                                          <img
-                                            src={item.variant.product.image}
-                                            alt={item.variant.product.name}
-                                            className="w-full h-full object-cover"
-                                          />
+                                    {order.items?.map(
+                                      (item: OrderItemDisplay) => (
+                                        <div
+                                          key={item.id}
+                                          className="flex items-center gap-4 bg-[#13161C] p-3 rounded-lg border border-white/5"
+                                        >
+                                          <div className="w-16 h-16 bg-white/5 rounded-md overflow-hidden flex-shrink-0">
+                                            <img
+                                              src={item.variant.product.image}
+                                              alt={item.variant.product.name}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-white font-bold uppercase tracking-wide text-xs truncate">
+                                              {item.variant.product.name}
+                                            </p>
+                                            <p className="text-[#8E8E93] text-[10px] font-semibold uppercase tracking-wider mt-1">
+                                              Size: {item.variant.size} • Qty:{" "}
+                                              {item.quantity}
+                                            </p>
+                                          </div>
+                                          <div className="text-right">
+                                            <p className="text-[#CCFF00] font-black text-sm">
+                                              $
+                                              {Number(
+                                                item.priceAtPurchase,
+                                              ).toFixed(2)}
+                                            </p>
+                                          </div>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-white font-bold uppercase tracking-wide text-xs truncate">
-                                            {item.variant.product.name}
-                                          </p>
-                                          <p className="text-[#8E8E93] text-[10px] font-semibold uppercase tracking-wider mt-1">
-                                            Size: {item.variant.size} • Qty:{" "}
-                                            {item.quantity}
-                                          </p>
-                                        </div>
-                                        <div className="text-right">
-                                          <p className="text-[#CCFF00] font-black text-sm">
-                                            $
-                                            {Number(
-                                              item.priceAtPurchase,
-                                            ).toFixed(2)}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    ))}
+                                      ),
+                                    )}
                                   </div>
                                 </div>
 
