@@ -56,7 +56,7 @@ export async function getProductsByCategory(categorySlug: string) {
     const products = await prisma.product.findMany({
       where: {
         category: {
-          title: categorySlug,
+          slug: categorySlug,
         },
       },
       include: {
@@ -108,15 +108,21 @@ export async function getAllProducts() {
 }
 export async function createReviewByProductId(
   productId: string,
-  reviewData: { rating: number; title: string; body: string; userId: string },
+  reviewData: { rating: number; title: string; body: string },
 ) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
   try {
     const review = await prisma.review.create({
       data: {
         rating: reviewData.rating,
         title: reviewData.title,
         body: reviewData.body,
-        userId: reviewData.userId,
+        userId: session.user.id,
         productId: productId,
       },
     });

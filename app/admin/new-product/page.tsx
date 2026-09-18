@@ -9,6 +9,8 @@ import {
 import React, { useEffect, useState } from "react";
 import { X, Upload, Loader2 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
+import { useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 type VariantMatrixItem = {
   id: string;
   flavor: string;
@@ -24,6 +26,18 @@ type VariantImage = {
 };
 
 export default function NewProductPage() {
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isPending) {
+      if (!session) {
+        router.push("/auth");
+      } else if (!session.user.isAdmin) {
+        router.push("/");
+      }
+    }
+  }, [session, isPending, router]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
