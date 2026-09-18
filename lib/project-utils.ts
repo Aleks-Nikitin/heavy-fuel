@@ -1,11 +1,11 @@
 export const CATEGORY_DATA = [
   {
     name: "Supplements",
-    image: "/images/supplements.jpg",
+    image: "/supplements.jpg",
     link: "/shop/supplements",
   },
-  { name: "Gear", image: "/images/gear.jpg", link: "/shop/gear" },
-  { name: "Apparel", image: "/images/apparel.jpg", link: "/shop/apparel" },
+  { name: "Gear", image: "/gear.jpg", link: "/shop/gear" },
+  { name: "Apparel", image: "/apparel.jpg", link: "/shop/apparel" },
 ] as const;
 export type Product = {
   id: number;

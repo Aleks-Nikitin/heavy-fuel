@@ -1,6 +1,7 @@
 import Image from "next/image";
-import proteinTub from "@/public/protein-tub.jpg";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+
 export default function CategoryCard({
   name,
   image,
@@ -13,20 +14,25 @@ export default function CategoryCard({
   return (
     <Link
       href={link}
-      className="w-[85vw] sm:w-[280px] md:w-full md:max-w-[340px] h-[340px] md:h-[380px] shrink-0 md:shrink snap-center flex flex-col items-center justify-between p-6 rounded-3xl border border-white/10 bg-[#16171b] hover:border-[#CCFF00]/50 hover:bg-[#181c24] transition-all duration-300 cursor-pointer"
+      className="group w-[78vw] max-w-[300px] sm:w-[300px] md:w-full md:max-w-none shrink-0 md:shrink snap-center"
     >
-      <div className="relative w-full h-[220px] md:h-[250px] flex items-center justify-center">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#13161C] border border-white/[0.08]">
         <Image
-          src={proteinTub}
-          alt={name}
+          src={image}
+          alt={`Shop HeavyFuel ${name}`}
           fill
-          className="object-contain p-2"
+          sizes="(max-width: 768px) 78vw, 33vw"
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         />
+        <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
-      <div className="text-center pt-2">
-        <span className="text-white font-bold tracking-wider text-lg uppercase">
+      <div className="flex items-center justify-between gap-3 pt-3">
+        <h3 className="text-base sm:text-lg font-black uppercase tracking-wide text-white transition-colors group-hover:text-[#CCFF00]">
           {name}
-        </span>
+        </h3>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#8E8E93] transition-all duration-300 group-hover:border-[#CCFF00]/40 group-hover:bg-[#CCFF00] group-hover:text-black">
+          <ArrowUpRight className="h-4 w-4" />
+        </div>
       </div>
     </Link>
   );

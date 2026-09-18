@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import CategoryCard from "./category-card";
 import { CATEGORY_DATA } from "@/lib/project-utils";
 
@@ -10,48 +10,87 @@ export default function Category() {
 
   const handleScroll = () => {
     if (!scrollRef.current) return;
-    const { scrollLeft, clientWidth } = scrollRef.current;
-    const index = Math.round(scrollLeft / (clientWidth * 0.8));
-    setActiveIndex(index);
+    const container = scrollRef.current;
+    const cards = Array.from(container.children);
+
+    if (!cards.length) return;
+
+    const containerCenter = container.scrollLeft + container.clientWidth / 2;
+
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    cards.forEach((card, index) => {
+      const element = card as HTMLElement;
+      const cardCenter = element.offsetLeft + element.offsetWidth / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    setActiveIndex(closestIndex);
   };
 
   const scrollToIndex = (index: number) => {
     if (!scrollRef.current) return;
-    const containerWidth = scrollRef.current.clientWidth * 0.8;
-    scrollRef.current.scrollTo({
-      left: containerWidth * index,
+
+    const card = scrollRef.current.children[index] as HTMLElement | undefined;
+
+    card?.scrollIntoView({
       behavior: "smooth",
+      inline: "center",
+      block: "nearest",
     });
   };
 
   return (
-    <div className="w-full space-y-6 py-8 bg-[#0B0D10]">
-      <h2 className="text-2xl text-center px-4 md:text-3xl font-black uppercase text-white tracking-tight">
-        BEST CATEGORIES
-      </h2>
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex w-full overflow-x-auto snap-x snap-mandatory gap-4 px-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth md:justify-center md:items-center md:gap-8 md:px-8 md:max-w-6xl md:mx-auto md:overflow-visible md:snap-none"
-      >
-        {CATEGORY_DATA.map((category) => (
-          <CategoryCard key={category.name} {...category} />
-        ))}
+    <section className="w-full bg-[#0B0D10] py-10 sm:py-14">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-5 px-4 sm:mb-8 sm:px-6 lg:px-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
+            Shop by Category
+          </h2>
+        </div>
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="
+            flex w-full gap-3 overflow-x-auto
+            snap-x snap-mandatory scroll-smooth
+            px-4 pb-1
+            [scrollbar-width:none]
+            [-ms-overflow-style:none]
+            [&::-webkit-scrollbar]:hidden
+
+            sm:gap-5 sm:px-6
+
+            md:grid md:grid-cols-3 md:gap-6
+            md:overflow-visible md:snap-none
+            lg:px-8
+          "
+        >
+          {CATEGORY_DATA.map((category) => (
+            <CategoryCard key={category.name} {...category} />
+          ))}
+        </div>
+
+        <div className="mt-5 flex items-center justify-center gap-1.5 md:hidden">
+          {CATEGORY_DATA.map((category, index) => (
+            <button
+              key={category.name}
+              type="button"
+              onClick={() => scrollToIndex(index)}
+              aria-label={`View ${category.name}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeIndex === index ? "w-6 bg-[#CCFF00]" : "w-1.5 bg-white/20"
+              }`}
+            />
+          ))}
+        </div>
       </div>
-      <div className="flex md:hidden justify-center items-center gap-2">
-        {CATEGORY_DATA.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => scrollToIndex(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              activeIndex === index
-                ? "w-8 bg-[#CCFF00]"
-                : "w-2 bg-white/20 hover:bg-white/40"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
+    </section>
   );
 }
