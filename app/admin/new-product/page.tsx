@@ -8,7 +8,7 @@ import {
 } from "@/lib/validations/product";
 import React, { useEffect, useState } from "react";
 import { X, Upload, Loader2 } from "lucide-react";
-
+import { CldUploadWidget } from "next-cloudinary";
 type VariantMatrixItem = {
   id: string;
   flavor: string;
@@ -136,10 +136,6 @@ export default function NewProductPage() {
     setVariants((prev) =>
       prev.map((v) => (v.id === id ? { ...v, [field]: value } : v)),
     );
-  };
-
-  const handleCloudinaryUpload = () => {
-    console.log("Trigger Cloudinary Upload Widget");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -353,30 +349,60 @@ export default function NewProductPage() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleCloudinaryUpload}
-                  className="
-                    group flex min-h-56 w-full
-                    flex-col items-center justify-center
-                    overflow-hidden rounded-xl
-                    border-2 border-dashed border-white/10
-                    bg-[#0B0D10] p-6
-                    text-center transition-all
-                    hover:border-[#CCFF00]/50
-                  "
+                <CldUploadWidget
+                  uploadPreset="heavyfuel_products"
+                  options={{
+                    multiple: false,
+                    maxFiles: 1,
+                    resourceType: "image",
+                    clientAllowedFormats: [
+                      "jpg",
+                      "jpeg",
+                      "png",
+                      "webp",
+                      "avif",
+                    ],
+                    maxFileSize: 5_000_000,
+                    folder: "heavyfuel/products",
+                  }}
+                  onSuccess={(result) => {
+                    if (
+                      typeof result.info === "object" &&
+                      "secure_url" in result.info
+                    ) {
+                      setImageUrl(result.info.secure_url);
+                      toast.success("Image uploaded!");
+                    }
+                  }}
+                  onError={() => {
+                    toast.error("Image upload failed");
+                  }}
                 >
-                  {imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={imageUrl}
-                      alt="Uploaded product"
-                      className="max-h-52 w-full rounded-lg object-contain"
-                    />
-                  ) : (
-                    <>
-                      <div
-                        className="
+                  {({ open }) => (
+                    <button
+                      type="button"
+                      onClick={() => open()}
+                      className="
+                        group flex min-h-56 w-full
+                        flex-col items-center justify-center
+                        overflow-hidden rounded-xl
+                        border-2 border-dashed border-white/10
+                        bg-[#0B0D10] p-6
+                        text-center transition-all
+                        hover:border-[#CCFF00]/50
+                    "
+                    >
+                      {imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={imageUrl}
+                          alt="Uploaded product"
+                          className="max-h-52 w-full rounded-lg object-contain"
+                        />
+                      ) : (
+                        <>
+                          <div
+                            className="
                         mb-4 flex h-12 w-12
                         items-center justify-center
                         rounded-full border border-white/10
@@ -384,23 +410,27 @@ export default function NewProductPage() {
                         transition-colors
                         group-hover:border-[#CCFF00]/30
                         "
-                      >
-                        <Upload
-                          size={22}
-                          className="text-[#8E8E93] transition-colors group-hover:text-[#CCFF00]"
-                        />
-                      </div>
-
-                      <p className="text-sm font-medium text-white/80">
-                        Click to upload image
-                      </p>
-
-                      <p className="mt-1 text-xs text-white/35">
-                        Upload via Cloudinary
-                      </p>
-                    </>
+                          >
+                            <Upload
+                              size={22}
+                              className="
+                                text-[#8E8E93]
+                                transition-colors
+                                group-hover:text-[#CCFF00]
+                            "
+                            />
+                          </div>
+                          <p className="text-sm font-medium text-white/80">
+                            Click to upload image
+                          </p>
+                          <p className="mt-1 text-xs text-[#8E8E93]">
+                            JPG, PNG, WEBP or AVIF · Max 5 MB
+                          </p>
+                        </>
+                      )}
+                    </button>
                   )}
-                </button>
+                </CldUploadWidget>
               </section>
             </div>
           </div>
@@ -411,7 +441,7 @@ export default function NewProductPage() {
                 <h2 className="text-lg font-semibold">Pricing & Inventory</h2>
 
                 <p className="mt-1 text-sm text-white/40">
-                  Set the price, stock, and SKU for each flavor and size
+                  Set the price, stock, and SKU for each variant and size
                   combination.
                 </p>
               </div>
@@ -421,17 +451,13 @@ export default function NewProductPage() {
                   <thead className="admin-table-header">
                     <tr>
                       {flavors.length > 0 && (
-                        <th className="px-5 py-3.5 font-medium">Flavor</th>
+                        <th className="px-5 py-3.5 font-medium">Variant</th>
                       )}
-
                       {sizes.length > 0 && (
                         <th className="px-5 py-3.5 font-medium">Size</th>
                       )}
-
                       <th className="px-5 py-3.5 font-medium">Price ($)</th>
-
                       <th className="px-5 py-3.5 font-medium">Stock</th>
-
                       <th className="px-5 py-3.5 font-medium">SKU</th>
                     </tr>
                   </thead>

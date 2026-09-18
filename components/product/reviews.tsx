@@ -42,20 +42,6 @@ export default function Reviews({
       setIsModalOpen(true);
     }
   };
-  if (totalReviews === 0) {
-    return (
-      <section className="w-full py-16 mt-16 border-t border-white/10">
-        <div className="text-center">
-          <h2 className="text-2xl font-black uppercase text-white tracking-tight mb-2">
-            Customer Reviews
-          </h2>
-          <p className="text-[#8E8E93] text-sm">
-            No reviews yet for this product.
-          </p>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <>
