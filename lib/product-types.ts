@@ -5,7 +5,12 @@ export type ProductVariantDisplay = {
   price: number;
   stock: number;
 };
-
+export type ProductVariantImageDisplay = {
+  id: string;
+  variant: string;
+  image: string;
+  imagePublicId: string | null;
+};
 export type ProductDisplay = {
   id: string;
   name: string;
@@ -16,6 +21,7 @@ export type ProductDisplay = {
     slug: string;
   };
   variants: ProductVariantDisplay[];
+  variantImages: ProductVariantImageDisplay[];
   reviews: {
     id: string;
     rating: number;

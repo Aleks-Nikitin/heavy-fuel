@@ -25,6 +25,9 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
   ];
   const [selectedVariant, setSelectedVariant] = useState(flavors[0]);
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
+  const currentImage =
+    product.variantImages.find((image) => image.variant === selectedVariant)
+      ?.image ?? product.image;
   const selectedProductVariant = product.variants.find(
     (variant) =>
       variant.size === selectedSize && variant.variant === selectedVariant,
@@ -80,7 +83,7 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
       price: currentPrice,
       priceAtPurchase: currentPrice,
       name: product.name,
-      image: product.image,
+      image: currentImage,
       stock: currentStock,
     });
 
@@ -94,8 +97,8 @@ export default function ProductCard({ product }: { product: ProductDisplay }) {
     >
       <div className="relative w-full h-[140px] sm:h-[200px] flex items-center justify-center overflow-hidden shrink-0">
         <Image
-          src={product.image}
-          alt={product.name}
+          src={currentImage}
+          alt={`${product.name} ${selectedVariant}`}
           fill
           className="object-contain p-1 group-hover:scale-105 transition-transform duration-500"
         />

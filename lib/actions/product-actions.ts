@@ -30,6 +30,12 @@ function toProductDisplay(product: {
     userId: string;
     createdAt: Date;
   }[];
+  variantImages: {
+    id: string;
+    variant: string;
+    image: string;
+    imagePublicId: string | null;
+  }[];
 }): ProductDisplay {
   return {
     ...product,
@@ -55,6 +61,7 @@ export async function getProductsByCategory(categorySlug: string) {
       include: {
         category: true,
         variants: true,
+        variantImages: true,
         reviews: {
           include: {
             user: {
@@ -74,7 +81,12 @@ export async function getProductsByCategory(categorySlug: string) {
 export async function getProducts() {
   const products = await prisma.product.findMany({
     take: 8,
-    include: { category: true, variants: true, reviews: true },
+    include: {
+      category: true,
+      variants: true,
+      reviews: true,
+      variantImages: true,
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -82,7 +94,12 @@ export async function getProducts() {
 }
 export async function getAllProducts() {
   const products = await prisma.product.findMany({
-    include: { category: true, variants: true, reviews: true },
+    include: {
+      category: true,
+      variants: true,
+      reviews: true,
+      variantImages: true,
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -125,6 +142,7 @@ export async function getProductById(productId: string) {
       include: {
         category: true,
         variants: true,
+        variantImages: true,
         reviews: {
           include: {
             user: {

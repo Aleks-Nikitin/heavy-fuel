@@ -13,17 +13,20 @@ export default function Price({
   id,
   name,
   image,
+  selectedVariant,
+  setSelectedVariant,
 }: {
   variants: ProductVariantDisplay[];
   id: string;
   name: string;
   image: string;
+  selectedVariant: string;
+  setSelectedVariant: (variant: string) => void;
 }) {
   const { addToCart, products } = useCartStore();
   const [quantity, setQuantity] = useState(1);
   const sizes = [...new Set(variants.map((variant) => variant.size))];
   const flavors = [...new Set(variants.map((variant) => variant.variant))];
-  const [selectedVariant, setSelectedVariant] = useState(flavors[0]);
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
 
   const selectedProductVariant = variants.find(
