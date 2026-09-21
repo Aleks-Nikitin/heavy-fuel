@@ -4,8 +4,7 @@ Heavy Fuel is a full-stack e-commerce application for supplements, apparel, and 
 
 The application includes a responsive storefront, variant-based inventory, persistent cart state, authentication, Stripe payments, webhook-driven order fulfillment, product reviews, and an admin dashboard for managing products, inventory, images, and orders.
 
-> **Live Demo:** Coming soon  
-> **Demo Video:** Coming soon
+> **Live Demo:** https://heavy-fuel.vercel.app
 
 ---
 
