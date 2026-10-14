@@ -26,7 +26,6 @@ export async function generateEmbedding(
     throw new Error("Failed to generate a valid Gemini embedding");
   }
 
-  // Normalize the truncated embedding to unit length.
   const magnitude = Math.hypot(...values);
 
   if (magnitude === 0) {
