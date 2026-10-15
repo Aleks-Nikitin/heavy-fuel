@@ -53,6 +53,7 @@ RESPONSE STYLE:
 const catalogArgsSchema = z.object({
   category: z.enum(["supplements", "apparel", "gear"]).optional(),
   productName: z.string().optional(),
+  productIds: z.array(z.string()).max(20).optional(),
   variant: z.string().optional(),
   size: z.string().optional(),
   minPrice: z.number().nonnegative().optional(),

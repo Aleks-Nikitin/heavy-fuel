@@ -17,6 +17,14 @@ export const customerToolDefinitions: FunctionDeclaration[] = [
           description:
             "HeavyFuel has exactly three categories: supplements, apparel, and gear. Protein powder, creatine, and mass gainer are product types within supplements, not separate categories.",
         },
+        productIds: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.STRING,
+          },
+          description:
+            "Optional product IDs returned by semanticSearch. Use these to filter semantically relevant products by price, flavor, size, or availability.",
+        },
 
         productName: {
           type: Type.STRING,

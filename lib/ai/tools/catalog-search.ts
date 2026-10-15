@@ -4,6 +4,7 @@ import type { Prisma } from "@/generated/prisma/client";
 export type CatalogSearchArgs = {
   category?: string;
   productName?: string;
+  productIds?: string[];
   variant?: string;
   size?: string;
   minPrice?: number;
@@ -17,6 +18,7 @@ export async function searchCatalog(args: CatalogSearchArgs) {
   const {
     category,
     productName,
+    productIds,
     variant,
     size,
     minPrice,
@@ -55,6 +57,12 @@ export async function searchCatalog(args: CatalogSearchArgs) {
     }),
 
     product: {
+      ...(productIds && {
+        id: {
+          in: productIds,
+        },
+      }),
+
       ...(productName && {
         name: {
           contains: productName,
