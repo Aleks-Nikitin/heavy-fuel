@@ -1,6 +1,7 @@
 import { GoogleGenAI, type Content, type Part } from "@google/genai";
 import { z } from "zod";
-
+import { getChatConversation, saveChatMessage } from "@/lib/ai/chat-history";
+import { prisma } from "@/lib/prisma";
 import { searchCatalog } from "./tools/catalog-search";
 import { customerToolDefinitions } from "./tools/tool-definitions";
 import { retrieveProducts } from "@/lib/ai/product-retrieval";
@@ -65,14 +66,24 @@ const semanticArgsSchema = z.object({
   query: z.string().trim().min(1).max(500),
 });
 
-export async function chatWithGemini(message: string) {
-  const contents: Content[] = [
-    {
-      role: "user",
-      parts: [{ text: message }],
-    },
-  ];
+export async function chatWithGemini(
+  message: string,
+  conversationId: string,
+  userId: string,
+) {
+  const conversation = await getChatConversation(conversationId, userId);
+  if (!conversation) {
+    throw new Error("Conversation not found.");
+  }
+  const contents: Content[] = conversation.messages.map((item) => ({
+    role: item.role === "USER" ? "user" : "model",
+    parts: [{ text: item.content }],
+  }));
 
+  contents.push({
+    role: "user",
+    parts: [{ text: message }],
+  });
   const MAX_ITERATIONS = 3;
 
   for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
@@ -103,8 +114,38 @@ export async function chatWithGemini(message: string) {
       ) ?? [];
 
     if (functionCalls.length === 0) {
+      const reply = response.text ?? "Sorry, I couldn't generate a response.";
+
+      await prisma.$transaction([
+        prisma.chatMessage.create({
+          data: {
+            conversationId,
+            role: "USER",
+            content: message,
+          },
+        }),
+
+        prisma.chatMessage.create({
+          data: {
+            conversationId,
+            role: "ASSISTANT",
+            content: reply,
+          },
+        }),
+
+        prisma.chatConversation.update({
+          where: {
+            id: conversationId,
+          },
+          data: {
+            updatedAt: new Date(),
+          },
+        }),
+      ]);
+
       return {
-        reply: response.text ?? "Sorry, I couldn't generate a response.",
+        conversationId,
+        reply,
       };
     }
 
