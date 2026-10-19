@@ -1,5 +1,6 @@
 import { GoogleGenAI, type Content, type Part } from "@google/genai";
 import { z } from "zod";
+import { validateRecommendations } from "@/lib/ai/validate-recommendations";
 import { getChatConversation, saveChatMessage } from "@/lib/ai/chat-history";
 import { getProductDetails } from "@/lib/ai/tools/product-details";
 import { getProductCards } from "@/lib/ai/product-cards";
@@ -50,6 +51,25 @@ RESPONSE STYLE:
 - Be friendly and conversational.
 - Keep responses concise unless the customer asks for details.
 - Mention specific products and prices when relevant.
+ PRODUCT RECOMMENDATIONS:
+  - When recommending or displaying products, select only products
+    relevant to your final response.
+  - Use only product IDs returned by your tools.
+  - Never invent product IDs.
+  - Recommend at most 5 products.
+  - If the customer is asking a general question that doesn't
+    require showing products, return an empty recommendedProductIds array.
+  - Do not recommend out-of-stock products unless the customer
+    specifically asks about unavailable products.
+  FINAL RESPONSE FORMAT:
+  When you have finished calling tools, respond with ONLY a JSON object
+  in this format:
+  {
+    "reply": "Your conversational response to the customer",
+    "recommendedProductIds": ["product-id-1", "product-id-2"]
+  }
+  Do not wrap the JSON in markdown code blocks.
+  Do not include additional text outside the JSON object.
 `;
 
 const catalogArgsSchema = z.object({
@@ -131,8 +151,13 @@ export async function chatWithGemini(
       ) ?? [];
 
     if (functionCalls.length === 0) {
-      const reply = response.text ?? "Sorry, I couldn't generate a response.";
-
+      const responseText = response.text;
+      if (!responseText?.trim()) {
+        throw new Error("Gemini returned an empty response.");
+      }
+      const validated = validateRecommendations(responseText, foundProductIds);
+      const { reply, recommendedProductIds } = validated;
+      const products = await getProductCards(recommendedProductIds);
       await prisma.$transaction([
         prisma.chatMessage.create({
           data: {
@@ -141,15 +166,14 @@ export async function chatWithGemini(
             content: message,
           },
         }),
-
         prisma.chatMessage.create({
           data: {
             conversationId,
             role: "ASSISTANT",
             content: reply,
+            productIds: products.map((product) => product.id),
           },
         }),
-
         prisma.chatConversation.update({
           where: {
             id: conversationId,
@@ -159,7 +183,6 @@ export async function chatWithGemini(
           },
         }),
       ]);
-      const products = await getProductCards(foundProductIds);
       return {
         conversationId,
         reply,

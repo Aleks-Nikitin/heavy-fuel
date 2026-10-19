@@ -3,9 +3,9 @@ import type { ProductCard } from "@/lib/ai/product-card-types";
 
 export async function getProductCards(
   productIds: string[],
+  limit = 5,
 ): Promise<ProductCard[]> {
-  const uniqueIds = [...new Set(productIds)].slice(0, 5);
-
+  const uniqueIds = [...new Set(productIds)].slice(0, limit);
   if (uniqueIds.length === 0) {
     return [];
   }
