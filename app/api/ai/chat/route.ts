@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { checkChatRateLimit } from "@/lib/ai/rate-limit";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { chatWithGemini } from "@/lib/ai/chat";
@@ -30,7 +31,37 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
+    let rateLimit;
+    try {
+      rateLimit = await checkChatRateLimit(session.user.id);
+    } catch {
+      return NextResponse.json(
+        {
+          error: "Chat is temporarily unavailable. Please try again shortly.",
+        },
+        {
+          status: 503,
+          headers: {
+            "Retry-After": "30",
+          },
+        },
+      );
+    }
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "You've sent too many messages. Please wait before trying again.",
+          retryAfter: rateLimit.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfter),
+          },
+        },
+      );
+    }
     const { message } = parsed.data;
     let conversationId = parsed.data.conversationId;
     if (!conversationId) {
