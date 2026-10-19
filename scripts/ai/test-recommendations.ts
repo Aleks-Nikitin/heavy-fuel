@@ -67,7 +67,7 @@ function main() {
 
   assert(
     invalid.reply === "I recommend HeavyFuel Whey Protein.",
-    "Invalid JSON fallback failed.",
+    "Invalid JSON reply was not preserved.",
   );
 
   const empty = validateRecommendations(

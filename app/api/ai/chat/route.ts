@@ -5,6 +5,8 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { chatWithGemini } from "@/lib/ai/chat";
 import { createChatConversation } from "@/lib/ai/chat-history";
+import { GeminiServiceError } from "@/lib/ai/gemini-retry";
+import { InvalidGeminiResponseError } from "@/lib/ai/validate-recommendations";
 export const runtime = "nodejs";
 const chatRequestSchema = z.object({
   message: z.string().trim().min(1).max(1000),
@@ -77,10 +79,40 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Chat API error:", error);
+    if (error instanceof GeminiServiceError) {
+      console.error("Gemini service error:", {
+        status: error.status,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Our AI assistant is temporarily busy. Please try again shortly.",
+          code: "AI_UNAVAILABLE",
+        },
+        {
+          status: 503,
+          headers: {
+            "Retry-After": "15",
+          },
+        },
+      );
+    }
+    if (error instanceof InvalidGeminiResponseError) {
+      console.error("Invalid Gemini structured response");
 
+      return NextResponse.json(
+        {
+          error: "The AI assistant couldn't complete your request.",
+          code: "INVALID_AI_RESPONSE",
+        },
+        { status: 502 },
+      );
+    }
+    console.error("Chat API error:", error);
     return NextResponse.json(
-      { error: "Failed to process chat request." },
+      {
+        error: "Failed to process chat request.",
+      },
       { status: 500 },
     );
   }

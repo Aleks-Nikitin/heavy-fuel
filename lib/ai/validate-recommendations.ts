@@ -1,32 +1,28 @@
 import { aiResponseSchema } from "@/lib/ai/response-schema";
-
+export class InvalidGeminiResponseError extends Error {
+  constructor() {
+    super("Gemini returned an invalid structured response.");
+    this.name = "InvalidGeminiResponseError";
+  }
+}
 export function validateRecommendations(
   responseText: string,
   availableProductIds: string[],
 ) {
-  const availableIds = new Set(availableProductIds);
-
   let parsed: unknown;
-
   try {
     parsed = JSON.parse(responseText);
   } catch {
-    return {
-      reply: responseText,
-      recommendedProductIds: [],
-    };
+    throw new InvalidGeminiResponseError();
   }
-
   const result = aiResponseSchema.safeParse(parsed);
 
   if (!result.success) {
-    return {
-      reply: responseText,
-      recommendedProductIds: [],
-    };
+    throw new InvalidGeminiResponseError();
   }
+  const availableIds = new Set(availableProductIds);
 
-  const validatedIds = [
+  const recommendedProductIds = [
     ...new Set(
       result.data.recommendedProductIds.filter((id) => availableIds.has(id)),
     ),
@@ -34,6 +30,6 @@ export function validateRecommendations(
 
   return {
     reply: result.data.reply,
-    recommendedProductIds: validatedIds,
+    recommendedProductIds,
   };
 }

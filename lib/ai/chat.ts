@@ -8,9 +8,13 @@ import { prisma } from "@/lib/prisma";
 import { searchCatalog } from "./tools/catalog-search";
 import { customerToolDefinitions } from "./tools/tool-definitions";
 import { retrieveProducts } from "@/lib/ai/product-retrieval";
-
+import { withGeminiRetry } from "@/lib/ai/gemini-retry";
+import { geminiResponseSchema } from "@/lib/ai/gemini-response-format";
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY!,
+  httpOptions: {
+    timeout: 15_000,
+  },
 });
 
 const MODEL = "gemini-3.8-flash";
@@ -61,15 +65,6 @@ RESPONSE STYLE:
     require showing products, return an empty recommendedProductIds array.
   - Do not recommend out-of-stock products unless the customer
     specifically asks about unavailable products.
-  FINAL RESPONSE FORMAT:
-  When you have finished calling tools, respond with ONLY a JSON object
-  in this format:
-  {
-    "reply": "Your conversational response to the customer",
-    "recommendedProductIds": ["product-id-1", "product-id-2"]
-  }
-  Do not wrap the JSON in markdown code blocks.
-  Do not include additional text outside the JSON object.
 `;
 
 const catalogArgsSchema = z.object({
@@ -124,18 +119,22 @@ export async function chatWithGemini(
   const MAX_ITERATIONS = 3;
 
   for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        tools: [
-          {
-            functionDeclarations: customerToolDefinitions,
-          },
-        ],
-      },
-    });
+    const response = await withGeminiRetry(() =>
+      ai.models.generateContent({
+        model: MODEL,
+        contents,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          tools: [
+            {
+              functionDeclarations: customerToolDefinitions,
+            },
+          ],
+          responseMimeType: "application/json",
+          responseSchema: geminiResponseSchema,
+        },
+      }),
+    );
 
     const modelContent = response.candidates?.[0]?.content;
 
