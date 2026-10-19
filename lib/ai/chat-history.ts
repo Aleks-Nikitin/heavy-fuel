@@ -23,9 +23,7 @@ export async function getChatConversation(
     },
     include: {
       messages: {
-        orderBy: {
-          createdAt: "asc",
-        },
+        orderBy: [{ createdAt: "asc" }, { id: "desc" }],
         take: 30,
       },
     },

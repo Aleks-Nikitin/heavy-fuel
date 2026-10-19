@@ -94,4 +94,24 @@ export const customerToolDefinitions: FunctionDeclaration[] = [
       required: ["query"],
     },
   },
+  {
+    name: "getProductDetails",
+
+    description:
+      "Retrieve complete details about a specific HeavyFuel product, including its description, available flavors, sizes, current prices, stock, and images. Use this when the customer asks for more information about a product identified by another tool.",
+
+    parameters: {
+      type: Type.OBJECT,
+
+      properties: {
+        productId: {
+          type: Type.STRING,
+          description:
+            "The exact product ID returned by searchCatalog or semanticSearch.",
+        },
+      },
+
+      required: ["productId"],
+    },
+  },
 ];

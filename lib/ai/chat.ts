@@ -1,6 +1,8 @@
 import { GoogleGenAI, type Content, type Part } from "@google/genai";
 import { z } from "zod";
 import { getChatConversation, saveChatMessage } from "@/lib/ai/chat-history";
+import { getProductDetails } from "@/lib/ai/tools/product-details";
+import { getProductCards } from "@/lib/ai/product-cards";
 import { prisma } from "@/lib/prisma";
 import { searchCatalog } from "./tools/catalog-search";
 import { customerToolDefinitions } from "./tools/tool-definitions";
@@ -62,6 +64,9 @@ const catalogArgsSchema = z.object({
   sortBy: z.enum(["price_asc", "price_desc"]).optional(),
   limit: z.number().int().min(1).max(20).optional(),
 });
+const productDetailsArgsSchema = z.object({
+  productId: z.string().trim().min(1),
+});
 
 const semanticArgsSchema = z.object({
   query: z.string().trim().min(1).max(500),
@@ -76,15 +81,26 @@ export async function chatWithGemini(
   if (!conversation) {
     throw new Error("Conversation not found.");
   }
-  const contents: Content[] = conversation.messages.map((item) => ({
-    role: item.role === "USER" ? "user" : "model",
-    parts: [{ text: item.content }],
-  }));
+  const contents: Content[] = [...conversation.messages]
+    .reverse()
+    .map((item) => ({
+      role: item.role === "USER" ? "user" : "model",
+      parts: [{ text: item.content }],
+    }));
 
   contents.push({
     role: "user",
     parts: [{ text: message }],
   });
+  const foundProductIds: string[] = [];
+
+  function collectProductIds(ids: string[]) {
+    for (const id of ids) {
+      if (!foundProductIds.includes(id)) {
+        foundProductIds.push(id);
+      }
+    }
+  }
   const MAX_ITERATIONS = 3;
 
   for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
@@ -143,10 +159,11 @@ export async function chatWithGemini(
           },
         }),
       ]);
-
+      const products = await getProductCards(foundProductIds);
       return {
         conversationId,
         reply,
+        products,
       };
     }
 
@@ -159,16 +176,28 @@ export async function chatWithGemini(
         switch (call.name) {
           case "searchCatalog": {
             const args = catalogArgsSchema.parse(call.args ?? {});
-            result = await searchCatalog(args);
+            const products = await searchCatalog(args);
+            collectProductIds(products.map((product) => product.productId));
+            result = products;
             break;
           }
 
           case "semanticSearch": {
             const args = semanticArgsSchema.parse(call.args ?? {});
-            result = await retrieveProducts(args.query);
+            const products = await retrieveProducts(args.query);
+            collectProductIds(products.map((product) => product.id));
+            result = products;
             break;
           }
-
+          case "getProductDetails": {
+            const args = productDetailsArgsSchema.parse(call.args ?? {});
+            const product = await getProductDetails(args.productId);
+            if (product) {
+              collectProductIds([product.id]);
+            }
+            result = product;
+            break;
+          }
           default:
             result = {
               error: "Unknown tool requested.",

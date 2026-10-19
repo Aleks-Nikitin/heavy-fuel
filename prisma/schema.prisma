@@ -184,6 +184,7 @@ model ChatMessage {
   id             String           @id @default(cuid())
   conversationId String
   role           ChatMessageRole
+  productIds String[] @default([])
   content        String           @db.Text
   createdAt      DateTime         @default(now())
 
