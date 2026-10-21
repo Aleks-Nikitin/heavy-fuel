@@ -35,12 +35,27 @@ YOUR RESPONSIBILITIES:
 - Recommend relevant products from HeavyFuel's actual catalog.
 
 TOOL USAGE:
+- For greetings, thanks, and general conversation that does not require
+  store information, respond directly without calling any tools.
+- Avoid redundant tool calls. If a previous tool already returned
+  sufficient information to answer the question, do not call another tool.
+- Prefer answering after one relevant catalog search when possible.
 - Use searchCatalog for exact questions about price, flavor, size, stock, or category.
 - Use semanticSearch for recommendations based on goals or natural-language descriptions.
 - You may use both tools when necessary.
 - A category is not the same as a product type.
 - For example, "protein powder" is a product type within supplements.
 - Never treat all supplements as protein powders.
+TOOL EFFICIENCY:
+- Do not call tools for greetings or general conversation.
+- Use the minimum number of tool calls needed to answer accurately.
+- For straightforward product questions, prefer a single searchCatalog call.
+- If searchCatalog returns sufficient product information, answer immediately.
+- Do not call semanticSearch after searchCatalog unless the customer asks
+  for goal-based recommendations that require semantic retrieval.
+- Do not call getProductDetails if searchCatalog already returned
+  the necessary product information.
+- Never repeat a tool call with substantially identical arguments.
 
 ACCURACY RULES:
 - Never invent products, prices, flavors, sizes, discounts, or inventory.
@@ -120,7 +135,7 @@ export async function chatWithGemini(
 
   for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
     const isLastIteration = iteration === MAX_ITERATIONS - 1;
-
+    const geminiStart = performance.now();
     const response = await withGeminiRetry(() =>
       ai.models.generateContent({
         model: MODEL,
@@ -140,6 +155,11 @@ export async function chatWithGemini(
           responseSchema: geminiResponseSchema,
         },
       }),
+    );
+    console.log(
+      `[AI Timing] Gemini iteration ${iteration + 1}: ${Math.round(
+        performance.now() - geminiStart,
+      )}ms`,
     );
 
     const modelContent = response.candidates?.[0]?.content;
@@ -199,7 +219,7 @@ export async function chatWithGemini(
 
     for (const call of functionCalls) {
       let result: unknown;
-
+      const toolStart = performance.now();
       try {
         switch (call.name) {
           case "searchCatalog": {
@@ -207,6 +227,11 @@ export async function chatWithGemini(
             const products = await searchCatalog(args);
             collectProductIds(products.map((product) => product.productId));
             result = products;
+            console.log(
+              `[AI Timing] Tool ${call.name}: ${Math.round(
+                performance.now() - toolStart,
+              )}ms`,
+            );
             break;
           }
 
@@ -215,6 +240,11 @@ export async function chatWithGemini(
             const products = await retrieveProducts(args.query);
             collectProductIds(products.map((product) => product.id));
             result = products;
+            console.log(
+              `[AI Timing] Tool ${call.name}: ${Math.round(
+                performance.now() - toolStart,
+              )}ms`,
+            );
             break;
           }
           case "getProductDetails": {
@@ -224,6 +254,11 @@ export async function chatWithGemini(
               collectProductIds([product.id]);
             }
             result = product;
+            console.log(
+              `[AI Timing] Tool ${call.name}: ${Math.round(
+                performance.now() - toolStart,
+              )}ms`,
+            );
             break;
           }
           default:
