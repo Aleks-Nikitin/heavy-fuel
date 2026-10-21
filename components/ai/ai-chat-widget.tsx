@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, X, Sparkles, Send, Loader2 } from "lucide-react";
 import type { ProductCard } from "@/lib/ai/product-card-types";
+import AIVoiceRecorder from "./ai-voice-recorder";
 import AIProductCard from "./ai-product-card";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
@@ -280,7 +281,18 @@ export default function AIChatWidget() {
                     disabled={isSending || sessionLoading}
                     className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#13161C] px-4 py-3 text-sm text-white outline-none placeholder:text-[#8E8E93] focus:border-[#CCFF00]/50 disabled:opacity-50"
                   />
-
+                  <AIVoiceRecorder
+                    disabled={isSending || sessionLoading}
+                    onTranscript={(transcript) => {
+                      setInput((previous) =>
+                        [previous.trim(), transcript]
+                          .filter(Boolean)
+                          .join(" ")
+                          .slice(0, 1000),
+                      );
+                    }}
+                    onError={(message) => setError(message || null)}
+                  />
                   <button
                     type="submit"
                     disabled={!input.trim() || isSending || sessionLoading}
