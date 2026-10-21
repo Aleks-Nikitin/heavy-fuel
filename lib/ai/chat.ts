@@ -17,7 +17,7 @@ const ai = new GoogleGenAI({
   },
 });
 
-const MODEL = "gemini-3.8-flash";
+const MODEL = "gemini-3.1-flash-lite";
 
 const SYSTEM_INSTRUCTION = `
 You are HeavyFuel's AI shopping assistant.
@@ -116,20 +116,26 @@ export async function chatWithGemini(
       }
     }
   }
-  const MAX_ITERATIONS = 3;
+  const MAX_ITERATIONS = 4;
 
   for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+    const isLastIteration = iteration === MAX_ITERATIONS - 1;
+
     const response = await withGeminiRetry(() =>
       ai.models.generateContent({
         model: MODEL,
         contents,
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
-          tools: [
-            {
-              functionDeclarations: customerToolDefinitions,
-            },
-          ],
+          ...(isLastIteration
+            ? {}
+            : {
+                tools: [
+                  {
+                    functionDeclarations: customerToolDefinitions,
+                  },
+                ],
+              }),
           responseMimeType: "application/json",
           responseSchema: geminiResponseSchema,
         },
@@ -249,8 +255,5 @@ export async function chatWithGemini(
     });
   }
 
-  return {
-    reply:
-      "Sorry, I couldn't complete your request right now. Please try again.",
-  };
+  throw new Error("Gemini failed to produce a final response.");
 }
