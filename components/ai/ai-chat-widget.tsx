@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Bot, X, Sparkles, Send, Loader2 } from "lucide-react";
+import type { ProductCard } from "@/lib/ai/product-card-types";
+import AIProductCard from "./ai-product-card";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 
@@ -18,12 +20,13 @@ type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  products?: ProductCard[];
 };
 
 type ChatResponse = {
   conversationId: string;
   reply: string;
-  products: unknown[];
+  products: ProductCard[];
 };
 
 export default function AIChatWidget() {
@@ -93,6 +96,7 @@ export default function AIChatWidget() {
           id: crypto.randomUUID(),
           role: "assistant",
           content: data.reply,
+          products: data.products ?? [],
         },
       ]);
     } catch (error) {
@@ -214,14 +218,30 @@ export default function AIChatWidget() {
                           : "justify-start"
                       }`}
                     >
-                      <div
-                        className={`max-w-[90%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                          message.role === "user"
-                            ? "rounded-tr-sm bg-[#CCFF00] text-black"
-                            : "rounded-tl-sm border border-white/10 bg-[#13161C] text-white/90"
-                        }`}
-                      >
-                        {message.content}
+                      <div className="flex w-full max-w-[90%] flex-col gap-3">
+                        <div
+                          className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                            message.role === "user"
+                              ? "self-end rounded-tr-sm bg-[#CCFF00] text-black"
+                              : "self-start rounded-tl-sm border border-white/10 bg-[#13161C] text-white/90"
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+
+                        {message.role === "assistant" &&
+                          message.products &&
+                          message.products.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                              {message.products.map((product) => (
+                                <AIProductCard
+                                  key={product.id}
+                                  product={product}
+                                  onNavigate={() => setOpen(false)}
+                                />
+                              ))}
+                            </div>
+                          )}
                       </div>
                     </div>
                   ))}
