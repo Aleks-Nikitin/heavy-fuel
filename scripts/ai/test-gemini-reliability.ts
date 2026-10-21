@@ -79,7 +79,28 @@ async function main() {
       throw new Error("Retry limit test failed.");
     }
   }
+  let timeoutAttempts = 0;
 
+  const timeoutResult = await withGeminiRetry(
+    async () => {
+      timeoutAttempts++;
+
+      if (timeoutAttempts === 1) {
+        throw new DOMException("This operation was aborted", "AbortError");
+      }
+
+      return "success";
+    },
+    {
+      sleep: async () => {},
+    },
+  );
+
+  if (timeoutResult !== "success" || timeoutAttempts !== 2) {
+    throw new Error("Timeout retry test failed.");
+  }
+
+  console.log("Timeout retry test passed.");
   console.log("Maximum retry test passed.");
 
   const valid = validateRecommendations(

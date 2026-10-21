@@ -13,7 +13,7 @@ import { geminiResponseSchema } from "@/lib/ai/gemini-response-format";
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY!,
   httpOptions: {
-    timeout: 15_000,
+    timeout: 45_000,
   },
 });
 

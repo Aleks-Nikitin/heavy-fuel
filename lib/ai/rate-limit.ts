@@ -5,21 +5,21 @@ const minuteLimiter = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, "1 m"),
   prefix: "heavyfuel:ai:minute",
   analytics: false,
-  timeout: 2000,
+  timeout: 6000,
 });
 const hourLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(30, "1h"),
   prefix: "heavyfuel:ai:hour",
   analytics: false,
-  timeout: 2000,
+  timeout: 6000,
 });
 const transcriptionLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(3, "1 m"),
   prefix: "heavyfuel:ai:transcription",
   analytics: false,
-  timeout: 2000,
+  timeout: 6000,
 });
 type ChatRateLimitResult =
   | {

@@ -28,7 +28,18 @@ function getStatus(error: unknown): number | undefined {
 
   return Number.isInteger(numeric) ? numeric : undefined;
 }
+function isTimeoutError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
 
+  const candidate = error as {
+    name?: unknown;
+    message?: unknown;
+  };
+
+  return candidate.name === "TimeoutError" || candidate.name === "AbortError";
+}
 function isRetryable(status: number | undefined): boolean {
   return (
     status === 408 ||
@@ -52,7 +63,7 @@ export async function withGeminiRetry<T>(
       return await operation();
     } catch (error) {
       const status = getStatus(error);
-      if (!isRetryable(status)) {
+      if (!isRetryable(status) && !isTimeoutError(error)) {
         throw error;
       }
       if (attempt === maxAttempts) {
