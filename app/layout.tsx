@@ -8,6 +8,7 @@ import Footer from "@/components/footer/footer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ToastContainer } from "react-toastify";
+import AIChatWidget from "@/components/ai/ai-chat-widget";
 import "react-toastify/dist/ReactToastify.css";
 const spaceGroteskHeading = Space_Grotesk({
   subsets: ["latin"],
@@ -51,6 +52,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <Header session={session} />
           {children}
           <Footer />
+          <AIChatWidget />
           <ToastContainer
             position="bottom-right"
             theme="dark"
