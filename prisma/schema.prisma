@@ -114,6 +114,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   orders        Order[]
+  chatConversations ChatConversation[]
   isAdmin       Boolean   @default(false)
   @@unique([email])
   @@map("user")
@@ -165,4 +166,34 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+model ChatConversation {
+  id        String        @id @default(cuid())
+  userId    String
+  title     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  role           ChatMessageRole
+  productIds String[] @default([])
+  content        String           @db.Text
+  createdAt      DateTime         @default(now())
+
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+enum ChatMessageRole {
+  USER
+  ASSISTANT
 }

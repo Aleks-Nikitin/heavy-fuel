@@ -9,24 +9,32 @@
     "lint": "eslint",
     "db:seed": "tsx prisma/seeds.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma migrate deploy && next build"
+    "vercel-build": "prisma migrate deploy && next build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@google/genai": "^2.30.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@stripe/react-stripe-js": "^6.10.0",
     "@stripe/stripe-js": "^9.16.0",
     "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-query-devtools": "^5.102.8",
+    "@upstash/ratelimit": "^2.2.0",
+    "@upstash/redis": "^1.39.0",
+    "assemblyai": "^4.41.7",
     "better-auth": "^1.7.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.3.0",
+    "file-type": "^22.2.0",
     "lucide-react": "^1.38.0",
+    "music-metadata": "^12.2.3",
     "next": "16.3.4",
     "next-cloudinary": "^6.19.3",
-    "pg": "^8.23.0",
+    "pg": "^8.23.1",
     "react": "19.2.8",
     "react-confetti-explosion": "^3.0.3",
     "react-dom": "19.2.8",
@@ -50,7 +58,8 @@
     "eslint-config-next": "16.3.4",
     "prisma": "^7.10.0",
     "tailwindcss": "^4",
-    "tsx": "^4.23.13",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^4.1.12"
   }
 }
