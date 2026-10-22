@@ -6,6 +6,7 @@ import type { ProductCard } from "@/lib/ai/product-card-types";
 import AIVoiceRecorder from "./ai-voice-recorder";
 import AIProductCard from "./ai-product-card";
 import Link from "next/link";
+import { MessageSquarePlus } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 
 import {
@@ -150,29 +151,32 @@ export default function AIChatWidget() {
             bg-[#0B0D10] text-white
           "
         >
-          <DrawerHeader className="flex flex-row items-center justify-between border-b border-white/10 px-5 py-5 text-left">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#CCFF00]/10">
-                <Sparkles size={20} className="text-[#CCFF00]" />
-              </div>
-
-              <div>
-                <DrawerTitle className="text-lg font-black uppercase tracking-tight text-white">
-                  HeavyFuel AI
+          <DrawerHeader className="flex flex-row items-center justify-between border-b border-white/10 bg-[#0B0D10] px-5 py-4 text-left">
+            {/* Branding */}
+            <div className="flex min-w-0 flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <DrawerTitle className="text-xl font-black uppercase tracking-tighter text-white">
+                  Heavy<span className="text-[#CCFF00]">Fuel</span>
                 </DrawerTitle>
 
-                <DrawerDescription className="text-xs text-[#8E8E93]">
-                  Your personal shopping assistant
-                </DrawerDescription>
+                <span className="rounded-md border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#CCFF00]">
+                  AI
+                </span>
               </div>
+
+              <DrawerDescription className="text-xs text-[#8E8E93]">
+                Your personal shopping assistant
+              </DrawerDescription>
             </div>
 
-            <DrawerClose
-              aria-label="Close AI assistant"
-              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/10"
-            >
-              <X size={22} />
-            </DrawerClose>
+            <div className="flex shrink-0 items-center gap-1">
+              <DrawerClose
+                aria-label="Close AI assistant"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-[#8E8E93] transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <X size={20} />
+              </DrawerClose>
+            </div>
           </DrawerHeader>
 
           {!sessionLoading && !session ? (
